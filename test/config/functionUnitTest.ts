@@ -168,3 +168,91 @@ export function mockConfigService(overrides: Record<string, unknown> = {}) {
     get: jest.fn((key: string) => defaults[key]),
   };
 }
+
+// ---------------------------------------------------------------------------
+// AuditLog Builder
+// ---------------------------------------------------------------------------
+
+import { AuditLog } from '../../src/models/audit-log.model';
+import { AuditAction } from '../../src/types/enums/audit-action.enum';
+import {
+  TEST_AUDIT_LOG_ID,
+  TEST_USER_ID,
+} from './constants';
+
+export function buildAuditLog(overrides: Partial<AuditLog> = {}): AuditLog {
+  const log = new AuditLog();
+  log.id = TEST_AUDIT_LOG_ID;
+  log.actorId = TEST_USER_ID;
+  log.tenantId = null;
+  log.action = AuditAction.USER_CREATED;
+  log.targetType = 'User';
+  log.targetId = TEST_USER_ID;
+  log.ipAddress = null;
+  log.userAgent = null;
+  log.metadata = null;
+  log.createdAt = TEST_CREATED_AT;
+  return Object.assign(log, overrides);
+}
+
+export function mockAuditLogRepository() {
+  return {
+    create: jest.fn(),
+    findById: jest.fn(),
+    findAll: jest.fn(),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Tenant Builder
+// ---------------------------------------------------------------------------
+
+import { Tenant } from '../../src/models/tenant.model';
+import { TenantStatus } from '../../src/types/enums/tenant-status.enum';
+import { PlanType } from '../../src/types/enums/plan-type.enum';
+import {
+  TEST_TENANT_ID,
+  TEST_BUSINESS_NAME,
+  TEST_OWNER_NAME,
+  TEST_OWNER_EMAIL,
+  FUTURE_EXPIRY_DATE,
+} from './constants';
+
+export function buildTenant(overrides: Partial<Tenant> = {}): Tenant {
+  const tenant = new Tenant();
+  tenant.id = TEST_TENANT_ID;
+  tenant.businessName = TEST_BUSINESS_NAME;
+  tenant.ownerName = TEST_OWNER_NAME;
+  tenant.ownerEmail = TEST_OWNER_EMAIL;
+  tenant.ownerPhone = null;
+  tenant.planType = PlanType.PRO;
+  tenant.outletCount = 3;
+  tenant.status = TenantStatus.ACTIVE;
+  tenant.expiryDate = FUTURE_EXPIRY_DATE;
+  tenant.notes = null;
+  tenant.createdBy = TEST_USER_ID;
+  tenant.createdAt = TEST_CREATED_AT;
+  tenant.updatedAt = TEST_UPDATED_AT;
+  tenant.deletedAt = null;
+  return Object.assign(tenant, overrides);
+}
+
+export function mockTenantRepository() {
+  return {
+    findById: jest.fn(),
+    findAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    softDelete: jest.fn(),
+  };
+}
+
+export function mockEventPublisherService() {
+  return {
+    publishTenantLocked: jest.fn(),
+    publishTenantUnlocked: jest.fn(),
+    publishInvoiceGenerated: jest.fn(),
+    publishInvoiceOverdue: jest.fn(),
+    publishPaymentReceived: jest.fn(),
+  };
+}

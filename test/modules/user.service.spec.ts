@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../../src/service/modules/users/user.service';
 import { UserRepository } from '../../src/repositories/modules/user.repository';
+import { AuditLogService } from '../../src/service/modules/audit-logs/audit-log.service';
 import { CreateUserDto } from '../../src/dto/user/create-user.dto';
 import { UpdateUserDto } from '../../src/dto/user/update-user.dto';
 import { ListUsersQueryDto } from '../../src/dto/user/list-users-query.dto';
@@ -13,11 +14,13 @@ import {
   SUPPORT_ADMIN_EMAIL,
   TEST_PASSWORD_PLAIN,
   TEST_USER_ID,
+  TEST_USER_ID_2,
   TEST_USER_ID_NONEXISTENT,
 } from '../config/constants';
 import {
   buildPaginatedResult,
   buildUser,
+  mockAuditLogService,
   mockConfigService,
   mockUserRepository,
 } from '../config/functionUnitTest';
@@ -29,6 +32,7 @@ import {
 describe('UserService', () => {
   let service: UserService;
   let repository: ReturnType<typeof mockUserRepository>;
+  let auditLogService: ReturnType<typeof mockAuditLogService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -42,11 +46,17 @@ describe('UserService', () => {
           provide: ConfigService,
           useFactory: mockConfigService,
         },
+        {
+          provide: AuditLogService,
+          useFactory: mockAuditLogService,
+        },
       ],
     }).compile();
 
     service = module.get<UserService>(UserService);
     repository = module.get(UserRepository);
+    auditLogService = module.get(AuditLogService);
+    auditLogService.log.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -151,7 +161,7 @@ describe('UserService', () => {
       repository.findByEmail.mockResolvedValue(null);
       repository.create.mockResolvedValue(buildUser());
 
-      await service.create(createDto);
+      await service.create(createDto, TEST_USER_ID_2);
 
       const createCall = repository.create.mock.calls[0][0];
 
@@ -170,10 +180,10 @@ describe('UserService', () => {
         buildUser({ email: createDto.email }),
       );
 
-      await expect(service.create(createDto)).rejects.toThrow(
+      await expect(service.create(createDto, TEST_USER_ID_2)).rejects.toThrow(
         ConflictException,
       );
-      await expect(service.create(createDto)).rejects.toThrow(
+      await expect(service.create(createDto, TEST_USER_ID_2)).rejects.toThrow(
         `A user with email "${createDto.email}" already exists`,
       );
       expect(repository.create).not.toHaveBeenCalled();
@@ -183,7 +193,7 @@ describe('UserService', () => {
       repository.findByEmail.mockResolvedValue(null);
       repository.create.mockResolvedValue(buildUser());
 
-      await service.create(createDto);
+      await service.create(createDto, TEST_USER_ID_2);
 
       expect(repository.create).toHaveBeenCalledWith(
         expect.objectContaining({ isActive: true }),
@@ -199,7 +209,7 @@ describe('UserService', () => {
       repository.findByEmail.mockResolvedValue(null);
       repository.create.mockResolvedValue(savedUser);
 
-      const result = await service.create(createDto);
+      const result = await service.create(createDto, TEST_USER_ID_2);
 
       expect(result).toEqual(savedUser);
     });
@@ -224,7 +234,7 @@ describe('UserService', () => {
       repository.findById.mockResolvedValue(user);
       repository.update.mockResolvedValue(updated);
 
-      const result = await service.update(TEST_USER_ID, updateDto);
+      const result = await service.update(TEST_USER_ID, updateDto, TEST_USER_ID_2);
 
       expect(repository.findById).toHaveBeenCalledWith(TEST_USER_ID);
       expect(repository.update).toHaveBeenCalledWith(TEST_USER_ID, {
@@ -238,7 +248,7 @@ describe('UserService', () => {
       repository.findById.mockResolvedValue(null);
 
       await expect(
-        service.update(TEST_USER_ID_NONEXISTENT, { fullName: 'X' }),
+        service.update(TEST_USER_ID_NONEXISTENT, { fullName: 'X' }, TEST_USER_ID_2),
       ).rejects.toThrow(NotFoundException);
 
       expect(repository.update).not.toHaveBeenCalled();
@@ -249,7 +259,7 @@ describe('UserService', () => {
       repository.findById.mockResolvedValue(user);
       repository.update.mockResolvedValue(user);
 
-      await service.update(TEST_USER_ID, { fullName: 'Only Name Change' });
+      await service.update(TEST_USER_ID, { fullName: 'Only Name Change' }, TEST_USER_ID_2);
 
       expect(repository.update).toHaveBeenCalledWith(TEST_USER_ID, {
         fullName: 'Only Name Change',
@@ -266,7 +276,7 @@ describe('UserService', () => {
       repository.findById.mockResolvedValue(buildUser({ isActive: true }));
       repository.update.mockResolvedValue(buildUser({ isActive: false }));
 
-      const result = await service.deactivate(TEST_USER_ID);
+      const result = await service.deactivate(TEST_USER_ID, TEST_USER_ID_2);
 
       expect(repository.update).toHaveBeenCalledWith(TEST_USER_ID, {
         isActive: false,
@@ -278,7 +288,7 @@ describe('UserService', () => {
       repository.findById.mockResolvedValue(null);
 
       await expect(
-        service.deactivate(TEST_USER_ID_NONEXISTENT),
+        service.deactivate(TEST_USER_ID_NONEXISTENT, TEST_USER_ID_2),
       ).rejects.toThrow(NotFoundException);
 
       expect(repository.update).not.toHaveBeenCalled();
@@ -294,7 +304,7 @@ describe('UserService', () => {
       repository.findById.mockResolvedValue(buildUser());
       repository.softDelete.mockResolvedValue(undefined);
 
-      await service.remove(TEST_USER_ID);
+      await service.remove(TEST_USER_ID, TEST_USER_ID_2);
 
       expect(repository.findById).toHaveBeenCalledWith(TEST_USER_ID);
       expect(repository.softDelete).toHaveBeenCalledWith(TEST_USER_ID);
@@ -303,7 +313,7 @@ describe('UserService', () => {
     it('harus throw NotFoundException sebelum softDelete jika user tidak ada', async () => {
       repository.findById.mockResolvedValue(null);
 
-      await expect(service.remove(TEST_USER_ID_NONEXISTENT)).rejects.toThrow(
+      await expect(service.remove(TEST_USER_ID_NONEXISTENT, TEST_USER_ID_2)).rejects.toThrow(
         NotFoundException,
       );
 

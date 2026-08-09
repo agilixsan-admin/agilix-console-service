@@ -1,27 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiResponse, PaginatedResult } from '../types/response.types';
-
-/**
- * BaseController
- *
- * Provides standardised HTTP response helpers shared by all controllers.
- * Source of truth: API_SPEC.md → Response Format / Pagination Standard
- *
- * All controllers in this project MUST extend BaseController and use
- * these helpers instead of constructing response objects inline.
- * This guarantees a consistent response envelope across all endpoints.
- *
- * Response shapes:
- *   Success:    { success: true,  message: string, data: T }
- *   Paginated:  { success: true,  message: string, data: PaginatedResult<T> }
- *   Error:      { success: false, message: string, errors?: any[] }
- *               (handled globally by NestJS exception filters)
- *
- * FORBIDDEN in this class:
- *   ✗ Business logic
- *   ✗ Database calls
- *   ✗ Service calls
- */
 export class BaseController {
   /**
    * Wraps a single resource in the standard success envelope.

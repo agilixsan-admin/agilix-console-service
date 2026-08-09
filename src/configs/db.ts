@@ -2,8 +2,9 @@ import 'reflect-metadata';
 import * as dotenv from 'dotenv';
 import { DataSource } from 'typeorm';
 import { User } from '../models/user.model';
+import { AuditLog } from '../models/audit-log.model';
+import { Tenant } from '../models/tenant.model';
 
-// Load .env sebelum membaca process.env
 dotenv.config();
 
 export const AppDataSource = new DataSource({
@@ -15,23 +16,14 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME ?? 'agilix_console',
   entities: [
     User,
-    // Tenant,      — Phase 2.2
-    // Invoice,     — Phase 3.1
-    // PosDevice,   — Phase 3 (POS Device)
-    // AuditLog,    — Phase 2.1
-    // Notification — Phase 3.3
+    AuditLog,
+    Tenant,
+    // Invoice      — Phase 3
+    // PosDevice    — Phase 3
+    // Notification — Phase 3
   ],
-
-  migrations: [
-    'src/migrations/*.ts',
-  ],
-
-  synchronize: false, // ← WAJIB false — DATABASE_RULES.md § Migration Policy
-
+  migrations: ['src/migrations/*.ts'],
+  synchronize: false,
   logging: process.env.NODE_ENV === 'development',
-
-  ssl:
-    process.env.DB_SSL === 'true'
-      ? { rejectUnauthorized: false }
-      : false,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 });
