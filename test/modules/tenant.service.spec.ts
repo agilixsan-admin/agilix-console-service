@@ -34,7 +34,10 @@ describe('TenantService', () => {
         TenantService,
         { provide: TenantRepository, useFactory: mockTenantRepository },
         { provide: AuditLogService, useFactory: mockAuditLogService },
-        { provide: EventPublisherService, useFactory: mockEventPublisherService },
+        {
+          provide: EventPublisherService,
+          useFactory: mockEventPublisherService,
+        },
       ],
     }).compile();
 
@@ -73,7 +76,9 @@ describe('TenantService', () => {
     it('harus throw NotFoundException jika tenant tidak ada', async () => {
       repository.findById.mockResolvedValue(null);
 
-      await expect(service.findById('nonexistent-id')).rejects.toThrow(NotFoundException);
+      await expect(service.findById('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -109,7 +114,13 @@ describe('TenantService', () => {
 
     it('harus throw BadRequestException jika expiryDate sudah lewat', async () => {
       await expect(
-        service.create({ ...createDto, expiryDate: PAST_EXPIRY_DATE.toISOString().split('T')[0] }, TEST_USER_ID),
+        service.create(
+          {
+            ...createDto,
+            expiryDate: PAST_EXPIRY_DATE.toISOString().split('T')[0],
+          },
+          TEST_USER_ID,
+        ),
       ).rejects.toThrow(BadRequestException);
 
       expect(repository.create).not.toHaveBeenCalled();
@@ -124,7 +135,11 @@ describe('TenantService', () => {
       repository.update.mockResolvedValue(updated);
       auditLogService.log.mockResolvedValue(undefined);
 
-      const result = await service.update(TEST_TENANT_ID, { businessName: 'Updated Store' }, TEST_USER_ID);
+      const result = await service.update(
+        TEST_TENANT_ID,
+        { businessName: 'Updated Store' },
+        TEST_USER_ID,
+      );
 
       expect(auditLogService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: AuditAction.TENANT_UPDATED }),
@@ -135,7 +150,9 @@ describe('TenantService', () => {
     it('harus throw NotFoundException jika tenant tidak ada', async () => {
       repository.findById.mockResolvedValue(null);
 
-      await expect(service.update('nonexistent-id', {}, TEST_USER_ID)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.update('nonexistent-id', {}, TEST_USER_ID),
+      ).rejects.toThrow(NotFoundException);
       expect(repository.update).not.toHaveBeenCalled();
     });
   });
@@ -150,27 +167,38 @@ describe('TenantService', () => {
 
       const result = await service.lock(TEST_TENANT_ID, TEST_USER_ID);
 
-      expect(repository.update).toHaveBeenCalledWith(TEST_TENANT_ID, { status: TenantStatus.LOCKED });
+      expect(repository.update).toHaveBeenCalledWith(TEST_TENANT_ID, {
+        status: TenantStatus.LOCKED,
+      });
       expect(auditLogService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: AuditAction.TENANT_LOCKED }),
       );
       expect(eventPublisher.publishTenantLocked).toHaveBeenCalledWith(
-        expect.objectContaining({ tenantId: TEST_TENANT_ID, lockedBy: TEST_USER_ID }),
+        expect.objectContaining({
+          tenantId: TEST_TENANT_ID,
+          lockedBy: TEST_USER_ID,
+        }),
       );
       expect(result.status).toBe(TenantStatus.LOCKED);
     });
 
     it('harus throw BadRequestException jika tenant sudah terkunci', async () => {
-      repository.findById.mockResolvedValue(buildTenant({ status: TenantStatus.LOCKED }));
+      repository.findById.mockResolvedValue(
+        buildTenant({ status: TenantStatus.LOCKED }),
+      );
 
-      await expect(service.lock(TEST_TENANT_ID, TEST_USER_ID)).rejects.toThrow(BadRequestException);
+      await expect(service.lock(TEST_TENANT_ID, TEST_USER_ID)).rejects.toThrow(
+        BadRequestException,
+      );
       expect(repository.update).not.toHaveBeenCalled();
     });
 
     it('harus throw NotFoundException jika tenant tidak ada', async () => {
       repository.findById.mockResolvedValue(null);
 
-      await expect(service.lock('nonexistent-id', TEST_USER_ID)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.lock('nonexistent-id', TEST_USER_ID),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -184,20 +212,29 @@ describe('TenantService', () => {
 
       const result = await service.unlock(TEST_TENANT_ID, TEST_USER_ID);
 
-      expect(repository.update).toHaveBeenCalledWith(TEST_TENANT_ID, { status: TenantStatus.ACTIVE });
+      expect(repository.update).toHaveBeenCalledWith(TEST_TENANT_ID, {
+        status: TenantStatus.ACTIVE,
+      });
       expect(auditLogService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: AuditAction.TENANT_UNLOCKED }),
       );
       expect(eventPublisher.publishTenantUnlocked).toHaveBeenCalledWith(
-        expect.objectContaining({ tenantId: TEST_TENANT_ID, unlockedBy: TEST_USER_ID }),
+        expect.objectContaining({
+          tenantId: TEST_TENANT_ID,
+          unlockedBy: TEST_USER_ID,
+        }),
       );
       expect(result.status).toBe(TenantStatus.ACTIVE);
     });
 
     it('harus throw BadRequestException jika tenant tidak sedang terkunci', async () => {
-      repository.findById.mockResolvedValue(buildTenant({ status: TenantStatus.ACTIVE }));
+      repository.findById.mockResolvedValue(
+        buildTenant({ status: TenantStatus.ACTIVE }),
+      );
 
-      await expect(service.unlock(TEST_TENANT_ID, TEST_USER_ID)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.unlock(TEST_TENANT_ID, TEST_USER_ID),
+      ).rejects.toThrow(BadRequestException);
       expect(repository.update).not.toHaveBeenCalled();
     });
   });
@@ -219,7 +256,9 @@ describe('TenantService', () => {
     it('harus throw NotFoundException dan tidak memanggil softDelete jika tenant tidak ada', async () => {
       repository.findById.mockResolvedValue(null);
 
-      await expect(service.remove('nonexistent-id', TEST_USER_ID)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.remove('nonexistent-id', TEST_USER_ID),
+      ).rejects.toThrow(NotFoundException);
       expect(repository.softDelete).not.toHaveBeenCalled();
     });
   });

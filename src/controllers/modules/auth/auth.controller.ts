@@ -8,7 +8,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BaseController } from '../../base-controller';
-import { AuthService, LoginResponse, RefreshResponse } from '../../../service/modules/auth/auth.service';
+import {
+  AuthService,
+  LoginResponse,
+  RefreshResponse,
+} from '../../../service/modules/auth/auth.service';
 import { LoginDto } from '../../../dto/auth/login.dto';
 import { RefreshTokenDto } from '../../../dto/auth/refresh-token.dto';
 import { JwtAuthGuard } from '../../../guards/jwt-auth.guard';

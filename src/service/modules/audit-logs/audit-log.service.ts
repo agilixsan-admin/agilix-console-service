@@ -15,7 +15,9 @@ export class AuditLogService {
     await this.auditLogRepository.create(data);
   }
 
-  async findAll(query: ListAuditLogsQueryDto): Promise<PaginatedResult<AuditLog>> {
+  async findAll(
+    query: ListAuditLogsQueryDto,
+  ): Promise<PaginatedResult<AuditLog>> {
     return this.auditLogRepository.findAll({
       page: query.page ?? 1,
       limit: query.limit ?? 10,

@@ -68,24 +68,33 @@ export class TenantService {
       action: AuditAction.TENANT_CREATED,
       targetType: 'Tenant',
       targetId: tenant.id,
-      metadata: { businessName: tenant.businessName, planType: tenant.planType },
+      metadata: {
+        businessName: tenant.businessName,
+        planType: tenant.planType,
+      },
     });
 
     return tenant;
   }
 
-  async update(id: string, dto: UpdateTenantDto, actorId: string): Promise<Tenant> {
+  async update(
+    id: string,
+    dto: UpdateTenantDto,
+    actorId: string,
+  ): Promise<Tenant> {
     await this.findById(id);
 
     const updateData: Partial<Tenant> = {};
-    if (dto.businessName !== undefined) updateData.businessName = dto.businessName;
+    if (dto.businessName !== undefined)
+      updateData.businessName = dto.businessName;
     if (dto.ownerName !== undefined) updateData.ownerName = dto.ownerName;
     if (dto.ownerEmail !== undefined) updateData.ownerEmail = dto.ownerEmail;
     if (dto.ownerPhone !== undefined) updateData.ownerPhone = dto.ownerPhone;
     if (dto.planType !== undefined) updateData.planType = dto.planType;
     if (dto.outletCount !== undefined) updateData.outletCount = dto.outletCount;
     if (dto.notes !== undefined) updateData.notes = dto.notes;
-    if (dto.expiryDate !== undefined) updateData.expiryDate = new Date(dto.expiryDate);
+    if (dto.expiryDate !== undefined)
+      updateData.expiryDate = new Date(dto.expiryDate);
 
     const updated = await this.tenantRepository.update(id, updateData);
 
@@ -108,7 +117,9 @@ export class TenantService {
       throw new BadRequestException('Tenant is already locked');
     }
 
-    const updated = await this.tenantRepository.update(id, { status: TenantStatus.LOCKED });
+    const updated = await this.tenantRepository.update(id, {
+      status: TenantStatus.LOCKED,
+    });
 
     await this.auditLogService.log({
       actorId,
@@ -135,7 +146,9 @@ export class TenantService {
       throw new BadRequestException('Tenant is not locked');
     }
 
-    const updated = await this.tenantRepository.update(id, { status: TenantStatus.ACTIVE });
+    const updated = await this.tenantRepository.update(id, {
+      status: TenantStatus.ACTIVE,
+    });
 
     await this.auditLogService.log({
       actorId,

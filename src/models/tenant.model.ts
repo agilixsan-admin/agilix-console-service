@@ -40,7 +40,12 @@ export class Tenant {
   @Column({ name: 'outlet_count', type: 'int' })
   outletCount: number;
 
-  @Column({ name: 'status', type: 'enum', enum: TenantStatus, default: TenantStatus.ACTIVE })
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: TenantStatus,
+    default: TenantStatus.ACTIVE,
+  })
   status: TenantStatus;
 
   @Column({ name: 'expiry_date', type: 'date' })

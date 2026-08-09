@@ -234,7 +234,11 @@ describe('UserService', () => {
       repository.findById.mockResolvedValue(user);
       repository.update.mockResolvedValue(updated);
 
-      const result = await service.update(TEST_USER_ID, updateDto, TEST_USER_ID_2);
+      const result = await service.update(
+        TEST_USER_ID,
+        updateDto,
+        TEST_USER_ID_2,
+      );
 
       expect(repository.findById).toHaveBeenCalledWith(TEST_USER_ID);
       expect(repository.update).toHaveBeenCalledWith(TEST_USER_ID, {
@@ -248,7 +252,11 @@ describe('UserService', () => {
       repository.findById.mockResolvedValue(null);
 
       await expect(
-        service.update(TEST_USER_ID_NONEXISTENT, { fullName: 'X' }, TEST_USER_ID_2),
+        service.update(
+          TEST_USER_ID_NONEXISTENT,
+          { fullName: 'X' },
+          TEST_USER_ID_2,
+        ),
       ).rejects.toThrow(NotFoundException);
 
       expect(repository.update).not.toHaveBeenCalled();
@@ -259,7 +267,11 @@ describe('UserService', () => {
       repository.findById.mockResolvedValue(user);
       repository.update.mockResolvedValue(user);
 
-      await service.update(TEST_USER_ID, { fullName: 'Only Name Change' }, TEST_USER_ID_2);
+      await service.update(
+        TEST_USER_ID,
+        { fullName: 'Only Name Change' },
+        TEST_USER_ID_2,
+      );
 
       expect(repository.update).toHaveBeenCalledWith(TEST_USER_ID, {
         fullName: 'Only Name Change',
@@ -313,9 +325,9 @@ describe('UserService', () => {
     it('harus throw NotFoundException sebelum softDelete jika user tidak ada', async () => {
       repository.findById.mockResolvedValue(null);
 
-      await expect(service.remove(TEST_USER_ID_NONEXISTENT, TEST_USER_ID_2)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.remove(TEST_USER_ID_NONEXISTENT, TEST_USER_ID_2),
+      ).rejects.toThrow(NotFoundException);
 
       expect(repository.softDelete).not.toHaveBeenCalled();
     });

@@ -42,7 +42,9 @@ export class AuditLogRepository {
     return this.repo.findOne({ where: { id } });
   }
 
-  async findAll(options: FindAllAuditLogsOptions): Promise<PaginatedResult<AuditLog>> {
+  async findAll(
+    options: FindAllAuditLogsOptions,
+  ): Promise<PaginatedResult<AuditLog>> {
     const page = options.page > 0 ? options.page : 1;
     const limit = Math.min(options.limit > 0 ? options.limit : 10, 100);
     const offset = (page - 1) * limit;

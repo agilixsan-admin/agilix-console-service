@@ -115,7 +115,9 @@ describe('AuditLogService', () => {
     it('harus throw NotFoundException jika audit log tidak ditemukan', async () => {
       repository.findById.mockResolvedValue(null);
 
-      await expect(service.findById('nonexistent-id')).rejects.toThrow(NotFoundException);
+      await expect(service.findById('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

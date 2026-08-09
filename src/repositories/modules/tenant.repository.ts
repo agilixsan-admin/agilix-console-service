@@ -25,7 +25,9 @@ export class TenantRepository {
     return this.repo.findOne({ where: { id } });
   }
 
-  async findAll(options: FindAllTenantsOptions): Promise<PaginatedResult<Tenant>> {
+  async findAll(
+    options: FindAllTenantsOptions,
+  ): Promise<PaginatedResult<Tenant>> {
     const page = options.page > 0 ? options.page : 1;
     const limit = Math.min(options.limit > 0 ? options.limit : 10, 100);
     const offset = (page - 1) * limit;
@@ -46,7 +48,9 @@ export class TenantRepository {
       qb.andWhere('tenant.status = :status', { status: options.status });
     }
     if (options.planType) {
-      qb.andWhere('tenant.planType = :planType', { planType: options.planType });
+      qb.andWhere('tenant.planType = :planType', {
+        planType: options.planType,
+      });
     }
 
     const [items, total] = await qb.getManyAndCount();

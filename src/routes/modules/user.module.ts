@@ -7,10 +7,7 @@ import { UserController } from '../../../controllers/modules/users/user.controll
 import { AuditLogModule } from './audit-log.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([User]),
-    AuditLogModule,
-  ],
+  imports: [TypeOrmModule.forFeature([User]), AuditLogModule],
   controllers: [UserController],
   providers: [UserRepository, UserService],
   exports: [UserRepository, UserService],

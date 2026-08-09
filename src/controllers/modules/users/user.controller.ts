@@ -35,7 +35,9 @@ export class UserController extends BaseController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async findAll(@Query() query: ListUsersQueryDto): Promise<ApiResponse<PaginatedResult<User>>> {
+  async findAll(
+    @Query() query: ListUsersQueryDto,
+  ): Promise<ApiResponse<PaginatedResult<User>>> {
     const result = await this.userService.findAll(query);
     return this.paginated(result, 'Users retrieved successfully');
   }

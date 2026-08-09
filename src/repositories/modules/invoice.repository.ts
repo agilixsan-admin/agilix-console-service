@@ -1,0 +1,75 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Invoice } from '../../models/invoice.model';
+import { InvoiceStatus } from '../../types/enums/invoice-status.enum';
+import { PaginatedResult } from '../../types/response.types';
+
+export interface FindAllInvoicesOptions {
+  page: number;
+  limit: number;
+  tenantId?: string;
+  status?: InvoiceStatus;
+  billingPeriod?: string;
+}
+
+@Injectable()
+export class InvoiceRepository {
+  constructor(
+    @InjectRepository(Invoice)
+    private readonly repo: Repository<Invoice>,
+  ) {}
+
+  async findById(id: string): Promise<Invoice | null> {
+    return this.repo.findOne({ where: { id } });
+  }
+
+  async findByInvoiceNumber(invoiceNumber: string): Promise<Invoice | null> {
+    return this.repo.findOne({ where: { invoiceNumber } });
+  }
+
+  async findAll(
+    options: FindAllInvoicesOptions,
+  ): Promise<PaginatedResult<Invoice>> {
+    const page = options.page > 0 ? options.page : 1;
+    const limit = Math.min(options.limit > 0 ? options.limit : 10, 100);
+    const offset = (page - 1) * limit;
+
+    const qb = this.repo
+      .createQueryBuilder('invoice')
+      .orderBy('invoice.createdAt', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    if (options.tenantId)
+      qb.andWhere('invoice.tenantId = :tenantId', {
+        tenantId: options.tenantId,
+      });
+    if (options.status)
+      qb.andWhere('invoice.status = :status', { status: options.status });
+    if (options.billingPeriod)
+      qb.andWhere('invoice.billingPeriod = :billingPeriod', {
+        billingPeriod: options.billingPeriod,
+      });
+
+    const [items, total] = await qb.getManyAndCount();
+    return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  async create(data: Partial<Invoice>): Promise<Invoice> {
+    const invoice = this.repo.create(data);
+    return this.repo.save(invoice);
+  }
+
+  async update(id: string, data: Partial<Invoice>): Promise<Invoice> {
+    await this.repo.update(id, data);
+    return this.repo.findOneOrFail({ where: { id } });
+  }
+
+  async countByTenantAndStatus(
+    tenantId: string,
+    status: InvoiceStatus,
+  ): Promise<number> {
+    return this.repo.count({ where: { tenantId, status } });
+  }
+}

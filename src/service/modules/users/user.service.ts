@@ -46,10 +46,13 @@ export class UserService {
   async create(dto: CreateUserDto, actorId: string): Promise<User> {
     const existing = await this.userRepository.findByEmail(dto.email);
     if (existing) {
-      throw new ConflictException(`A user with email "${dto.email}" already exists`);
+      throw new ConflictException(
+        `A user with email "${dto.email}" already exists`,
+      );
     }
 
-    const saltRounds = this.configService.get<number>('bcrypt.saltRounds') ?? 12;
+    const saltRounds =
+      this.configService.get<number>('bcrypt.saltRounds') ?? 12;
     const passwordHash = await bcrypt.hash(dto.password, saltRounds);
 
     const user = await this.userRepository.create({
@@ -93,7 +96,9 @@ export class UserService {
   async deactivate(id: string, actorId: string): Promise<User> {
     await this.findById(id);
 
-    const deactivatedUser = await this.userRepository.update(id, { isActive: false });
+    const deactivatedUser = await this.userRepository.update(id, {
+      isActive: false,
+    });
 
     await this.auditLogService.log({
       actorId,

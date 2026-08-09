@@ -1,4 +1,11 @@
-import { Controller, Get, HttpCode, HttpStatus, Sse, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Sse,
+  UseGuards,
+} from '@nestjs/common';
 import { Observable, map } from 'rxjs';
 import { RealtimeService, SseEvent } from '../../../events/realtime.service';
 import { JwtAuthGuard } from '../../../guards/jwt-auth.guard';
@@ -12,10 +19,13 @@ export class RealtimeController {
   @Sse()
   stream(): Observable<MessageEvent> {
     return this.realtimeService.getStream().pipe(
-      map((event: SseEvent) => ({
-        data: JSON.stringify(event),
-        type: event.event,
-      } as MessageEvent)),
+      map(
+        (event: SseEvent) =>
+          ({
+            data: JSON.stringify(event),
+            type: event.event,
+          }) as MessageEvent,
+      ),
     );
   }
 }

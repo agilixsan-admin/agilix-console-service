@@ -64,7 +64,9 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
 
-  console.log(`🚀 Agilix Console Service running on: http://localhost:${port}/${GLOBAL_PREFIX}`);
+  console.log(
+    `🚀 Agilix Console Service running on: http://localhost:${port}/${GLOBAL_PREFIX}`,
+  );
 }
 
 bootstrap();

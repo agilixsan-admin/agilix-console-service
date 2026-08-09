@@ -175,10 +175,7 @@ export function mockConfigService(overrides: Record<string, unknown> = {}) {
 
 import { AuditLog } from '../../src/models/audit-log.model';
 import { AuditAction } from '../../src/types/enums/audit-action.enum';
-import {
-  TEST_AUDIT_LOG_ID,
-  TEST_USER_ID,
-} from './constants';
+import { TEST_AUDIT_LOG_ID, TEST_USER_ID } from './constants';
 
 export function buildAuditLog(overrides: Partial<AuditLog> = {}): AuditLog {
   const log = new AuditLog();

@@ -23,7 +23,14 @@ import { RealtimeModule } from './routes/modules/realtime.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
-      load: [serverConfig, databaseConfig, jwtConfig, redisConfig, smtpConfig, bcryptConfig],
+      load: [
+        serverConfig,
+        databaseConfig,
+        jwtConfig,
+        redisConfig,
+        smtpConfig,
+        bcryptConfig,
+      ],
     }),
 
     TypeOrmModule.forRootAsync({

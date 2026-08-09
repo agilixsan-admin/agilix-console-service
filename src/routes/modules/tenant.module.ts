@@ -8,11 +8,7 @@ import { AuditLogModule } from './audit-log.module';
 import { RealtimeModule } from './realtime.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Tenant]),
-    AuditLogModule,
-    RealtimeModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Tenant]), AuditLogModule, RealtimeModule],
   controllers: [TenantController],
   providers: [TenantRepository, TenantService],
   exports: [TenantService],

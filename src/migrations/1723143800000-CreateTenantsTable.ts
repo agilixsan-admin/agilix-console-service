@@ -35,10 +35,18 @@ export class CreateTenantsTable1723143800000 implements MigrationInterface {
       )
     `);
 
-    await queryRunner.query(`CREATE INDEX "idx_tenants_status"       ON "tenants" ("status")`);
-    await queryRunner.query(`CREATE INDEX "idx_tenants_plan_type"    ON "tenants" ("plan_type")`);
-    await queryRunner.query(`CREATE INDEX "idx_tenants_owner_email"  ON "tenants" ("owner_email")`);
-    await queryRunner.query(`CREATE INDEX "idx_tenants_expiry_date"  ON "tenants" ("expiry_date")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_tenants_status"       ON "tenants" ("status")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_tenants_plan_type"    ON "tenants" ("plan_type")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_tenants_owner_email"  ON "tenants" ("owner_email")`,
+    );
+    await queryRunner.query(
+      `CREATE INDEX "idx_tenants_expiry_date"  ON "tenants" ("expiry_date")`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
