@@ -141,3 +141,30 @@ export function mockRealtimeService() {
     getStream: jest.fn(),
   };
 }
+
+/**
+ * Membuat mock untuk JwtService.
+ */
+export function mockJwtService() {
+  return {
+    sign: jest.fn(),
+    verify: jest.fn(),
+  };
+}
+
+/**
+ * Membuat mock untuk ConfigService.
+ * Default mengembalikan nilai yang umum digunakan di test auth.
+ */
+export function mockConfigService(overrides: Record<string, unknown> = {}) {
+  const defaults: Record<string, unknown> = {
+    'bcrypt.saltRounds': 10,
+    'jwt.secret': 'test-jwt-secret-fixture',
+    'jwt.expiresIn': '30m',
+    'jwt.refreshExpiresIn': '7d',
+    ...overrides,
+  };
+  return {
+    get: jest.fn((key: string) => defaults[key]),
+  };
+}

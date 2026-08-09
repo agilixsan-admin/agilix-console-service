@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../../models/user.model';
 import {
@@ -13,15 +14,6 @@ import { PaginatedResult } from '../../../types/response.types';
 import { CreateUserDto } from '../../../dto/user/create-user.dto';
 import { UpdateUserDto } from '../../../dto/user/update-user.dto';
 import { ListUsersQueryDto } from '../../../dto/user/list-users-query.dto';
-
-/**
- * BCRYPT_ROUNDS
- *
- * Cost factor for bcrypt password hashing.
- * 12 rounds provides a good balance of security and performance.
- * DATABASE_RULES.md § Data Integrity Rules → User: "Password wajib hash bcrypt"
- */
-const BCRYPT_ROUNDS = 12;
 
 /**
  * UserService
@@ -49,7 +41,10 @@ const BCRYPT_ROUNDS = 12;
  */
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly configService: ConfigService,
+  ) {}
 
   // ---------------------------------------------------------------------------
   // Read operations
@@ -116,7 +111,8 @@ export class UserService {
     }
 
     // 2. Hash password — NEVER store plaintext
-    const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
+    const saltRounds = this.configService.get<number>('bcrypt.saltRounds') ?? 12;
+    const passwordHash = await bcrypt.hash(dto.password, saltRounds);
 
     // 3. Persist
     const user = await this.userRepository.create({

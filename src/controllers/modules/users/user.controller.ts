@@ -19,6 +19,10 @@ import { UpdateUserDto } from '../../../dto/user/update-user.dto';
 import { ListUsersQueryDto } from '../../../dto/user/list-users-query.dto';
 import { ApiResponse, PaginatedResult } from '../../../types/response.types';
 import { User } from '../../../models/user.model';
+import { JwtAuthGuard } from '../../../guards/jwt-auth.guard';
+import { RolesGuard } from '../../../guards/roles.guard';
+import { Roles } from '../../../decorators/roles.decorator';
+import { UserRole } from '../../../types/enums/user-role.enum';
 
 /**
  * UserController
@@ -50,6 +54,8 @@ import { User } from '../../../models/user.model';
  * Registered under /api/v1/users via global prefix in main.ts (Phase 1.1)
  */
 @Controller('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.SUPER_ADMIN)
 export class UserController extends BaseController {
   constructor(private readonly userService: UserService) {
     super();

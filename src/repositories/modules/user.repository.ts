@@ -78,9 +78,9 @@ export class UserRepository {
   async findByEmailWithPassword(email: string): Promise<User | null> {
     return this.repo
       .createQueryBuilder('user')
-      .addSelect('user.password_hash')
+      .addSelect('user.passwordHash')
       .where('user.email = :email', { email })
-      .andWhere('user.deleted_at IS NULL')
+      .andWhere('user.deletedAt IS NULL')
       .getOne();
   }
 

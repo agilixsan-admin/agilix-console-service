@@ -11,6 +11,7 @@ import {
 } from './configs/config';
 import { User } from './models/user.model';
 import { UserModule } from './routes/modules/user.module';
+import { AuthModule } from './routes/modules/auth.module';
 
 /**
  * AppModule
@@ -99,13 +100,8 @@ import { UserModule } from './routes/modules/user.module';
     }),
 
     // --- Domain Modules ---
-
-    /**
-     * UserModule — Phase 1.2
-     * Provides: User entity, UserRepository, UserService, UserController
-     * Endpoints: GET/POST /users, GET/PATCH/DELETE /users/:id
-     */
     UserModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

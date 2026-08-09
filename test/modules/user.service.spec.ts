@@ -1,4 +1,5 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { UserService } from '../../src/service/modules/users/user.service';
@@ -17,6 +18,7 @@ import {
 import {
   buildPaginatedResult,
   buildUser,
+  mockConfigService,
   mockUserRepository,
 } from '../config/functionUnitTest';
 
@@ -35,6 +37,10 @@ describe('UserService', () => {
         {
           provide: UserRepository,
           useFactory: mockUserRepository,
+        },
+        {
+          provide: ConfigService,
+          useFactory: mockConfigService,
         },
       ],
     }).compile();

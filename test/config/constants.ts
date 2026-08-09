@@ -96,3 +96,12 @@ export const TEST_PAID_AT = new Date('2026-08-09T10:00:00.000Z');
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_LIMIT = 10;
 export const DEFAULT_TOTAL_PAGES = 1;
+
+// ---------------------------------------------------------------------------
+// Auth / JWT Fixtures
+// ---------------------------------------------------------------------------
+
+export const TEST_ACCESS_TOKEN = 'test.access.token.fixture';
+export const TEST_REFRESH_TOKEN = 'test.refresh.token.fixture';
+export const TEST_JWT_SECRET = 'test-jwt-secret-fixture';
+export const TEST_EXPIRES_IN = 1800;
