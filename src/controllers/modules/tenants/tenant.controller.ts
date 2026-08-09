@@ -32,7 +32,7 @@ export class TenantController extends BaseController {
   }
 
   @Get()
-  @Roles(UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN, UserRole.SUPPORT_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN, UserRole.SUPPORT_ADMIN, UserRole.VIEWER)
   @HttpCode(HttpStatus.OK)
   async findAll(@Query() query: ListTenantsQueryDto) {
     const result = await this.tenantService.findAll(query);
@@ -40,7 +40,7 @@ export class TenantController extends BaseController {
   }
 
   @Get(':id')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN, UserRole.SUPPORT_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN, UserRole.SUPPORT_ADMIN, UserRole.VIEWER)
   @HttpCode(HttpStatus.OK)
   async findById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     const tenant = await this.tenantService.findById(id);

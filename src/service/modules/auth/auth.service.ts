@@ -3,9 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from '../../../repositories/modules/user.repository';
+import { AuditLogService } from '../audit-logs/audit-log.service';
 import { LoginDto } from '../../../dto/auth/login.dto';
 import { RefreshTokenDto } from '../../../dto/auth/refresh-token.dto';
 import { User } from '../../../models/user.model';
+import { AuditAction } from '../../../types/enums/audit-action.enum';
 import { JwtPayload } from './jwt.strategy';
 
 export interface LoginResponse {
@@ -25,9 +27,14 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
-  async login(dto: LoginDto): Promise<LoginResponse> {
+  async login(
+    dto: LoginDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<LoginResponse> {
     const user = await this.userRepository.findByEmailWithPassword(dto.email);
 
     if (!user) {
@@ -59,6 +66,16 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, {
       expiresIn: this.configService.get<string>('jwt.refreshExpiresIn') ?? '7d',
+    });
+
+    await this.auditLogService.log({
+      actorId: user.id,
+      action: AuditAction.AUTH_LOGIN,
+      targetType: 'User',
+      targetId: user.id,
+      ipAddress: ipAddress ?? null,
+      userAgent: userAgent ?? null,
+      metadata: { email: user.email },
     });
 
     return {
@@ -100,6 +117,21 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign(newPayload),
     };
+  }
+
+  async logout(
+    actorId: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<void> {
+    await this.auditLogService.log({
+      actorId,
+      action: AuditAction.AUTH_LOGOUT,
+      targetType: 'User',
+      targetId: actorId,
+      ipAddress: ipAddress ?? null,
+      userAgent: userAgent ?? null,
+    });
   }
 
   async getProfile(userId: string): Promise<User> {

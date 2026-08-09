@@ -49,13 +49,20 @@ async function bootstrap() {
   // ---------------------------------------------------------------------------
   // CORS
   // Origin dikonfigurasi dari CORS_ORIGIN env variable.
-  // Default '*' hanya untuk development — production wajib set origin spesifik.
+  // Production wajib set CORS_ORIGIN — default false (block all) di non-dev.
   // ---------------------------------------------------------------------------
+  const isDevEnv = (process.env.NODE_ENV ?? 'development') === 'development';
+  const corsOrigin = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : isDevEnv
+      ? '*'
+      : false;
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? '*',
+    origin: corsOrigin,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+    credentials: corsOrigin !== '*' && corsOrigin !== false,
   });
 
   // ---------------------------------------------------------------------------

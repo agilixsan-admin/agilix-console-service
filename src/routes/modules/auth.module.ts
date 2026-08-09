@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UserModule } from './user.module';
+import { AuditLogModule } from './audit-log.module';
 import { AuthService } from '../../service/modules/auth/auth.service';
 import { JwtStrategy } from '../../service/modules/auth/jwt.strategy';
 import { AuthController } from '../../controllers/modules/auth/auth.controller';
@@ -23,6 +24,7 @@ import { RolesGuard } from '../../guards/roles.guard';
       }),
     }),
     UserModule,
+    AuditLogModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],

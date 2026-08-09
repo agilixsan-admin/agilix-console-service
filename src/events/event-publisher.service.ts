@@ -5,6 +5,35 @@ import { RealtimeService } from './realtime.service';
 export class EventPublisherService {
   constructor(private readonly realtimeService: RealtimeService) {}
 
+  // ---------------------------------------------------------------------------
+  // Tenant Events — EVENT_CATALOG.md
+  // ---------------------------------------------------------------------------
+
+  publishTenantCreated(payload: {
+    tenantId: string;
+    businessName: string;
+    status: string;
+  }): void {
+    this.realtimeService.publish({
+      event: 'tenant.created',
+      version: 1,
+      timestamp: new Date().toISOString(),
+      data: payload,
+    });
+  }
+
+  publishTenantUpdated(payload: {
+    tenantId: string;
+    businessName: string;
+  }): void {
+    this.realtimeService.publish({
+      event: 'tenant.updated',
+      version: 1,
+      timestamp: new Date().toISOString(),
+      data: payload,
+    });
+  }
+
   publishTenantLocked(payload: {
     tenantId: string;
     businessName: string;
@@ -32,6 +61,10 @@ export class EventPublisherService {
       data: payload,
     });
   }
+
+  // ---------------------------------------------------------------------------
+  // Invoice Events — EVENT_CATALOG.md
+  // ---------------------------------------------------------------------------
 
   publishInvoiceGenerated(payload: {
     invoiceId: string;

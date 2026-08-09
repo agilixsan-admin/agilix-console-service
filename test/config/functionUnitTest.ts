@@ -246,6 +246,8 @@ export function mockTenantRepository() {
 
 export function mockEventPublisherService() {
   return {
+    publishTenantCreated: jest.fn(),
+    publishTenantUpdated: jest.fn(),
     publishTenantLocked: jest.fn(),
     publishTenantUnlocked: jest.fn(),
     publishInvoiceGenerated: jest.fn(),

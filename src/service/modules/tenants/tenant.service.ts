@@ -74,6 +74,12 @@ export class TenantService {
       },
     });
 
+    this.eventPublisher.publishTenantCreated({
+      tenantId: tenant.id,
+      businessName: tenant.businessName,
+      status: tenant.status,
+    });
+
     return tenant;
   }
 
@@ -105,6 +111,11 @@ export class TenantService {
       targetType: 'Tenant',
       targetId: id,
       metadata: { ...dto },
+    });
+
+    this.eventPublisher.publishTenantUpdated({
+      tenantId: id,
+      businessName: updated.businessName,
     });
 
     return updated;

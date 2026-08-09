@@ -4,7 +4,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../../src/service/modules/auth/auth.service';
 import { UserRepository } from '../../src/repositories/modules/user.repository';
+import { AuditLogService } from '../../src/service/modules/audit-logs/audit-log.service';
 import { ConfigService } from '@nestjs/config';
+import { AuditAction } from '../../src/types/enums/audit-action.enum';
 import {
   SUPER_ADMIN_EMAIL,
   TEST_ACCESS_TOKEN,
@@ -17,6 +19,7 @@ import {
 import {
   buildUser,
   buildUserWithPassword,
+  mockAuditLogService,
   mockConfigService,
   mockJwtService,
   mockUserRepository,
@@ -28,6 +31,7 @@ describe('AuthService', () => {
   let userRepository: ReturnType<typeof mockUserRepository>;
   let jwtService: ReturnType<typeof mockJwtService>;
   let configService: ReturnType<typeof mockConfigService>;
+  let auditLogService: ReturnType<typeof mockAuditLogService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -36,6 +40,7 @@ describe('AuthService', () => {
         { provide: UserRepository, useFactory: mockUserRepository },
         { provide: JwtService, useFactory: mockJwtService },
         { provide: ConfigService, useFactory: mockConfigService },
+        { provide: AuditLogService, useFactory: mockAuditLogService },
       ],
     }).compile();
 
@@ -43,6 +48,7 @@ describe('AuthService', () => {
     userRepository = module.get(UserRepository);
     jwtService = module.get(JwtService);
     configService = module.get(ConfigService);
+    auditLogService = module.get(AuditLogService);
   });
 
   afterEach(() => {
@@ -64,6 +70,7 @@ describe('AuthService', () => {
 
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
       userRepository.update.mockResolvedValue(user);
+      auditLogService.log.mockResolvedValue(undefined);
       jwtService.sign
         .mockReturnValueOnce(TEST_ACCESS_TOKEN)
         .mockReturnValueOnce(TEST_REFRESH_TOKEN);
@@ -80,6 +87,21 @@ describe('AuthService', () => {
       expect(userRepository.update).toHaveBeenCalledWith(
         user.id,
         expect.objectContaining({ lastLoginAt: expect.any(Date) }),
+      );
+    });
+
+    it('harus memanggil AuditLogService.log dengan AUTH_LOGIN setelah login berhasil', async () => {
+      const hash = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
+      const user = buildUserWithPassword({ passwordHash: hash });
+      userRepository.findByEmailWithPassword.mockResolvedValue(user);
+      userRepository.update.mockResolvedValue(user);
+      auditLogService.log.mockResolvedValue(undefined);
+      jwtService.sign.mockReturnValue(TEST_ACCESS_TOKEN);
+
+      await service.login({ email: SUPER_ADMIN_EMAIL, password: TEST_PASSWORD_PLAIN });
+
+      expect(auditLogService.log).toHaveBeenCalledWith(
+        expect.objectContaining({ action: AuditAction.AUTH_LOGIN }),
       );
     });
 
@@ -133,6 +155,7 @@ describe('AuthService', () => {
       const user = buildUserWithPassword({ passwordHash: hash });
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
       userRepository.update.mockResolvedValue(user);
+      auditLogService.log.mockResolvedValue(undefined);
       jwtService.sign.mockReturnValue(TEST_ACCESS_TOKEN);
 
       await service.login({
@@ -143,6 +166,22 @@ describe('AuthService', () => {
       expect(userRepository.update).toHaveBeenCalledWith(
         user.id,
         expect.objectContaining({ lastLoginAt: expect.any(Date) }),
+      );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // logout
+  // -------------------------------------------------------------------------
+
+  describe('logout', () => {
+    it('harus memanggil AuditLogService.log dengan AUTH_LOGOUT', async () => {
+      auditLogService.log.mockResolvedValue(undefined);
+
+      await service.logout(TEST_USER_ID);
+
+      expect(auditLogService.log).toHaveBeenCalledWith(
+        expect.objectContaining({ action: AuditAction.AUTH_LOGOUT, actorId: TEST_USER_ID }),
       );
     });
   });

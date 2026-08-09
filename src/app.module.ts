@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
@@ -12,6 +12,10 @@ import {
 import { User } from './models/user.model';
 import { AuditLog } from './models/audit-log.model';
 import { Tenant } from './models/tenant.model';
+import { Invoice } from './models/invoice.model';
+import { PosDevice } from './models/pos-device.model';
+import { Notification } from './models/notification.model';
+import { RequestContextMiddleware } from './middlewares/request-context.middleware';
 import { UserModule } from './routes/modules/user.module';
 import { AuthModule } from './routes/modules/auth.module';
 import { AuditLogModule } from './routes/modules/audit-log.module';
@@ -47,9 +51,9 @@ import { RealtimeModule } from './routes/modules/realtime.module';
           User,
           AuditLog,
           Tenant,
-          // Invoice      — Phase 3
-          // PosDevice    — Phase 3
-          // Notification — Phase 3
+          Invoice,
+          PosDevice,
+          Notification,
         ],
         migrations: [],
         synchronize: false,
@@ -67,4 +71,10 @@ import { RealtimeModule } from './routes/modules/realtime.module';
     RealtimeModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(RequestContextMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
