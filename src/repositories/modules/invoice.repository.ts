@@ -72,4 +72,8 @@ export class InvoiceRepository {
   ): Promise<number> {
     return this.repo.count({ where: { tenantId, status } });
   }
+
+  async countByBillingPeriod(billingPeriod: string): Promise<number> {
+    return this.repo.count({ where: { billingPeriod } });
+  }
 }

@@ -255,3 +255,46 @@ export function mockEventPublisherService() {
     publishPaymentReceived: jest.fn(),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Invoice Builder
+// ---------------------------------------------------------------------------
+
+import { Invoice } from '../../src/models/invoice.model';
+import { InvoiceStatus } from '../../src/types/enums/invoice-status.enum';
+import {
+  TEST_INVOICE_ID,
+  TEST_INVOICE_NUMBER,
+  TEST_INVOICE_AMOUNT,
+  TEST_BILLING_PERIOD,
+  TEST_DUE_DATE,
+  TEST_PAID_AT,
+} from './constants';
+
+export function buildInvoice(overrides: Partial<Invoice> = {}): Invoice {
+  const invoice = new Invoice();
+  invoice.id = TEST_INVOICE_ID;
+  invoice.tenantId = TEST_TENANT_ID;
+  invoice.invoiceNumber = TEST_INVOICE_NUMBER;
+  invoice.amount = TEST_INVOICE_AMOUNT;
+  invoice.billingPeriod = TEST_BILLING_PERIOD;
+  invoice.dueDate = TEST_DUE_DATE;
+  invoice.paidAt = null;
+  invoice.status = InvoiceStatus.PENDING;
+  invoice.notes = null;
+  invoice.createdAt = TEST_CREATED_AT;
+  invoice.updatedAt = TEST_UPDATED_AT;
+  return Object.assign(invoice, overrides);
+}
+
+export function mockInvoiceRepository() {
+  return {
+    findById: jest.fn(),
+    findAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    findByInvoiceNumber: jest.fn(),
+    countByTenantAndStatus: jest.fn(),
+    countByBillingPeriod: jest.fn(),
+  };
+}

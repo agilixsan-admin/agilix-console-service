@@ -16,6 +16,7 @@ import { Invoice } from './models/invoice.model';
 import { PosDevice } from './models/pos-device.model';
 import { Notification } from './models/notification.model';
 import { RequestContextMiddleware } from './middlewares/request-context.middleware';
+import { InvoiceModule } from './routes/modules/invoice.module';
 import { UserModule } from './routes/modules/user.module';
 import { AuthModule } from './routes/modules/auth.module';
 import { AuditLogModule } from './routes/modules/audit-log.module';
@@ -69,6 +70,7 @@ import { RealtimeModule } from './routes/modules/realtime.module';
     AuditLogModule,
     TenantModule,
     RealtimeModule,
+    InvoiceModule,
   ],
 })
 export class AppModule implements NestModule {

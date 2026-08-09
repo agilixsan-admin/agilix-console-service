@@ -30,14 +30,14 @@ export class User {
     length: 255,
     select: false,
   })
-  passwordHash: string;
+  passwordHash!: string;
 
   @Column({
     name: 'role',
     type: 'enum',
     enum: UserRole,
   })
-  role: UserRole;
+  role!: UserRole;
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
   @Column({ name: 'last_login_at', type: 'timestamptz', nullable: true })
