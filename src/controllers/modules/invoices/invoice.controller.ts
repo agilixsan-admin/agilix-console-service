@@ -31,12 +31,7 @@ export class InvoiceController extends BaseController {
   }
 
   @Get()
-  @Roles(
-    UserRole.SUPER_ADMIN,
-    UserRole.FINANCE_ADMIN,
-    UserRole.SUPPORT_ADMIN,
-    UserRole.VIEWER,
-  )
+  @Roles(UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN)
   @HttpCode(HttpStatus.OK)
   async findAll(@Query() query: ListInvoicesQueryDto) {
     const result = await this.invoiceService.findAll(query);
@@ -44,12 +39,7 @@ export class InvoiceController extends BaseController {
   }
 
   @Get(':id')
-  @Roles(
-    UserRole.SUPER_ADMIN,
-    UserRole.FINANCE_ADMIN,
-    UserRole.SUPPORT_ADMIN,
-    UserRole.VIEWER,
-  )
+  @Roles(UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN)
   @HttpCode(HttpStatus.OK)
   async findById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     const invoice = await this.invoiceService.findById(id);
