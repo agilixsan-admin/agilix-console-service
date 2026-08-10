@@ -1,0 +1,86 @@
+{
+  "paths": {
+    "/audit-logs": {
+      "get": {
+        "tags": ["Audit Logs"],
+        "summary": "Get list audit logs dengan pagination dan filter (read-only)",
+        "operationId": "getAuditLogs",
+        "produces": ["application/json"],
+        "parameters": [
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "limit", "in": "query", "type": "integer", "default": 10 },
+          { "name": "action", "in": "query", "type": "string", "description": "Filter by action type (e.g., USER_CREATED, TENANT_LOCKED)" },
+          { "name": "userId", "in": "query", "type": "string", "description": "Filter by user who performed the action" },
+          { "name": "startDate", "in": "query", "type": "string", "format": "date-time", "description": "Filter from date" },
+          { "name": "endDate", "in": "query", "type": "string", "format": "date-time", "description": "Filter to date" }
+        ],
+        "responses": {
+          "200": {
+            "description": "List audit logs",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "items": [{
+                      "id": "123e4567-e89b-12d3-a456-426614174005",
+                      "action": "TENANT_LOCKED",
+                      "userId": "123e4567-e89b-12d3-a456-426614174000",
+                      "resourceId": "123e4567-e89b-12d3-a456-426614174001",
+                      "resourceType": "Tenant",
+                      "metadata": { "tenantName": "PT Maju Jaya", "reason": "Payment overdue" },
+                      "ip": "192.168.1.100",
+                      "userAgent": "Mozilla/5.0...",
+                      "createdAt": "2026-08-10T12:30:00Z"
+                    }],
+                    "total": 500,
+                    "page": 1,
+                    "limit": 10
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/audit-logs/{id}": {
+      "get": {
+        "tags": ["Audit Logs"],
+        "summary": "Get detail audit log by ID",
+        "operationId": "getAuditLogById",
+        "produces": ["application/json"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "Audit log detail",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174005",
+                    "action": "TENANT_LOCKED",
+                    "userId": "123e4567-e89b-12d3-a456-426614174000",
+                    "user": { "fullName": "Admin User", "email": "admin@agilix.com" },
+                    "resourceId": "123e4567-e89b-12d3-a456-426614174001",
+                    "resourceType": "Tenant",
+                    "metadata": { "tenantName": "PT Maju Jaya", "reason": "Payment overdue" },
+                    "ip": "192.168.1.100",
+                    "userAgent": "Mozilla/5.0...",
+                    "createdAt": "2026-08-10T12:30:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Audit log not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    }
+  }
+}

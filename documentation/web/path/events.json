@@ -1,0 +1,24 @@
+{
+  "paths": {
+    "/events": {
+      "get": {
+        "tags": ["Events"],
+        "summary": "Server-Sent Events (SSE) stream untuk realtime updates",
+        "operationId": "getEventStream",
+        "produces": ["text/event-stream"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "SSE stream connected. Client akan menerima events realtime dalam format:\n\nevent: {eventType}\ndata: {JSON payload}\n\nEvent types yang tersedia:\n- tenant.created\n- tenant.locked\n- tenant.unlocked\n- invoice.created\n- invoice.paid\n- invoice.cancelled\n- invoice.overdue\n- device.registered\n- device.online\n- device.offline\n- notification.sent\n- notification.failed",
+            "schema": {
+              "type": "string",
+              "example": "event: tenant.locked\ndata: {\"event\":\"tenant.locked\",\"version\":1,\"timestamp\":\"2026-08-10T12:30:00Z\",\"data\":{\"tenantId\":\"123e4567-e89b-12d3-a456-426614174001\",\"tenantName\":\"PT Maju Jaya\",\"status\":\"LOCKED\"}}\n\n"
+            }
+          },
+          "401": { "description": "Unauthorized - JWT token required" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    }
+  }
+}

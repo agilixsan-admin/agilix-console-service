@@ -1,0 +1,110 @@
+{
+  "paths": {
+    "/dashboard/summary": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get dashboard summary metrics",
+        "operationId": "getDashboardSummary",
+        "produces": ["application/json"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dashboard summary",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "totalTenants": 50,
+                    "activeTenants": 42,
+                    "lockedTenants": 5,
+                    "overdueInvoices": 12,
+                    "onlineDevices": 38
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/dashboard/tenant-growth": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get tenant growth over time",
+        "operationId": "getTenantGrowth",
+        "produces": ["application/json"],
+        "parameters": [{
+          "name": "months",
+          "in": "query",
+          "type": "integer",
+          "default": 6,
+          "minimum": 1,
+          "maximum": 24
+        }],
+        "responses": {
+          "200": {
+            "description": "Tenant growth data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": [
+                    { "month": "2026-03", "count": 5 },
+                    { "month": "2026-04", "count": 8 },
+                    { "month": "2026-05", "count": 12 },
+                    { "month": "2026-06", "count": 15 },
+                    { "month": "2026-07", "count": 18 },
+                    { "month": "2026-08", "count": 20 }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/dashboard/revenue-summary": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get revenue summary over time",
+        "operationId": "getRevenueSummary",
+        "produces": ["application/json"],
+        "parameters": [{
+          "name": "months",
+          "in": "query",
+          "type": "integer",
+          "default": 6,
+          "minimum": 1,
+          "maximum": 24
+        }],
+        "responses": {
+          "200": {
+            "description": "Revenue summary data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": [
+                    { "period": "2026-03", "total": 15000000 },
+                    { "period": "2026-04", "total": 22000000 },
+                    { "period": "2026-05", "total": 28000000 },
+                    { "period": "2026-06", "total": 35000000 },
+                    { "period": "2026-07", "total": 42000000 },
+                    { "period": "2026-08", "total": 50000000 }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    }
+  }
+}

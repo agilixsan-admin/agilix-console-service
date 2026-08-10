@@ -1,0 +1,345 @@
+{
+  "paths": {
+    "/tenants": {
+      "get": {
+        "tags": ["Tenants"],
+        "summary": "Get list tenants dengan pagination dan filter",
+        "operationId": "getTenants",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "type": "string",
+            "enum": ["ACTIVE", "LOCKED", "SUSPENDED", "EXPIRED"]
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "type": "string",
+            "description": "Search by name or email"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List tenants",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "example": "123e4567-e89b-12d3-a456-426614174001" },
+                          "name": { "example": "PT Maju Jaya" },
+                          "email": { "example": "admin@majujaya.com" },
+                          "phone": { "example": "+628123456789" },
+                          "address": { "example": "Jl. Sudirman No. 123, Jakarta" },
+                          "status": { "example": "ACTIVE" },
+                          "subscriptionEndDate": { "example": "2026-12-31T00:00:00Z" },
+                          "createdAt": { "example": "2026-08-10T10:00:00Z" }
+                        }
+                      }
+                    },
+                    "total": { "example": 50 },
+                    "page": { "example": 1 },
+                    "limit": { "example": 10 }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "post": {
+        "tags": ["Tenants"],
+        "summary": "Create tenant baru",
+        "operationId": "createTenant",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["name", "email", "phone", "address", "subscriptionEndDate"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "PT Maju Jaya"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "admin@majujaya.com"
+                },
+                "phone": {
+                  "type": "string",
+                  "example": "+628123456789"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "Jl. Sudirman No. 123, Jakarta"
+                },
+                "subscriptionEndDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "example": "2026-12-31T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Tenant created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Tenant created successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174001",
+                    "name": "PT Maju Jaya",
+                    "email": "admin@majujaya.com",
+                    "status": "ACTIVE"
+                  }
+                }
+              }
+            }
+          },
+          "409": { "description": "Email already exists" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/tenants/{id}": {
+      "get": {
+        "tags": ["Tenants"],
+        "summary": "Get detail tenant by ID",
+        "operationId": "getTenantById",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant detail",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174001",
+                    "name": "PT Maju Jaya",
+                    "email": "admin@majujaya.com",
+                    "phone": "+628123456789",
+                    "address": "Jl. Sudirman No. 123, Jakarta",
+                    "status": "ACTIVE",
+                    "subscriptionEndDate": "2026-12-31T00:00:00Z",
+                    "createdAt": "2026-08-10T10:00:00Z",
+                    "updatedAt": "2026-08-10T10:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Tenant not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "put": {
+        "tags": ["Tenants"],
+        "summary": "Update tenant",
+        "operationId": "updateTenant",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "example": "PT Maju Jaya Updated"
+                },
+                "phone": {
+                  "type": "string",
+                  "example": "+628123456790"
+                },
+                "address": {
+                  "type": "string",
+                  "example": "Jl. Thamrin No. 456, Jakarta"
+                },
+                "subscriptionEndDate": {
+                  "type": "string",
+                  "format": "date-time",
+                  "example": "2027-12-31T00:00:00Z"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant updated",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Tenant updated successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174001",
+                    "name": "PT Maju Jaya Updated",
+                    "status": "ACTIVE"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Tenant not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "delete": {
+        "tags": ["Tenants"],
+        "summary": "Soft delete tenant",
+        "operationId": "deleteTenant",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant deleted",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Tenant deleted successfully" },
+                "data": { "example": null }
+              }
+            }
+          },
+          "404": { "description": "Tenant not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/tenants/{id}/lock": {
+      "post": {
+        "tags": ["Tenants"],
+        "summary": "Lock tenant (suspend access)",
+        "operationId": "lockTenant",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant locked",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Tenant locked successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174001",
+                    "status": "LOCKED"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Tenant not found" },
+          "400": { "description": "Tenant already locked" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/tenants/{id}/unlock": {
+      "post": {
+        "tags": ["Tenants"],
+        "summary": "Unlock tenant (restore access)",
+        "operationId": "unlockTenant",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant unlocked",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Tenant unlocked successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174001",
+                    "status": "ACTIVE"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Tenant not found" },
+          "400": { "description": "Tenant is not locked" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    }
+  }
+}

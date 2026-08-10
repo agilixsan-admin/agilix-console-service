@@ -1,0 +1,216 @@
+{
+  "paths": {
+    "/pos-devices": {
+      "get": {
+        "tags": ["POS Devices"],
+        "summary": "Get list POS devices dengan pagination dan filter",
+        "operationId": "getPosDevices",
+        "produces": ["application/json"],
+        "parameters": [
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "limit", "in": "query", "type": "integer", "default": 10 },
+          { "name": "status", "in": "query", "type": "string", "enum": ["ONLINE", "OFFLINE", "MAINTENANCE"] },
+          { "name": "tenantId", "in": "query", "type": "string" }
+        ],
+        "responses": {
+          "200": {
+            "description": "List POS devices",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "items": [{
+                      "id": "123e4567-e89b-12d3-a456-426614174003",
+                      "deviceId": "POS-001",
+                      "tenantId": "123e4567-e89b-12d3-a456-426614174001",
+                      "status": "ONLINE",
+                      "lastHeartbeat": "2026-08-10T13:00:00Z",
+                      "createdAt": "2026-08-10T10:00:00Z"
+                    }],
+                    "total": 38,
+                    "page": 1,
+                    "limit": 10
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "post": {
+        "tags": ["POS Devices"],
+        "summary": "Register POS device baru",
+        "operationId": "registerPosDevice",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "required": ["deviceId", "tenantId"],
+            "properties": {
+              "deviceId": { "type": "string", "example": "POS-001" },
+              "tenantId": { "type": "string", "example": "123e4567-e89b-12d3-a456-426614174001" },
+              "location": { "type": "string", "example": "Store Branch 1" }
+            }
+          }
+        }],
+        "responses": {
+          "201": {
+            "description": "Device registered",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Device registered successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174003",
+                    "deviceId": "POS-001",
+                    "status": "OFFLINE"
+                  }
+                }
+              }
+            }
+          },
+          "409": { "description": "Device ID already exists" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/pos-devices/{id}": {
+      "get": {
+        "tags": ["POS Devices"],
+        "summary": "Get detail POS device by ID",
+        "operationId": "getPosDeviceById",
+        "produces": ["application/json"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "Device detail",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174003",
+                    "deviceId": "POS-001",
+                    "tenantId": "123e4567-e89b-12d3-a456-426614174001",
+                    "location": "Store Branch 1",
+                    "status": "ONLINE",
+                    "lastHeartbeat": "2026-08-10T13:00:00Z",
+                    "createdAt": "2026-08-10T10:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Device not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "put": {
+        "tags": ["POS Devices"],
+        "summary": "Update POS device",
+        "operationId": "updatePosDevice",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "type": "string" },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "location": { "type": "string", "example": "Store Branch 2" },
+                "status": { "type": "string", "enum": ["ONLINE", "OFFLINE", "MAINTENANCE"], "example": "MAINTENANCE" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device updated",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Device updated successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174003",
+                    "location": "Store Branch 2",
+                    "status": "MAINTENANCE"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Device not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "delete": {
+        "tags": ["POS Devices"],
+        "summary": "Delete POS device",
+        "operationId": "deletePosDevice",
+        "produces": ["application/json"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "Device deleted",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Device deleted successfully" },
+                "data": { "example": null }
+              }
+            }
+          },
+          "404": { "description": "Device not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/pos-devices/{id}/heartbeat": {
+      "post": {
+        "tags": ["POS Devices"],
+        "summary": "Send heartbeat signal from device",
+        "operationId": "sendHeartbeat",
+        "produces": ["application/json"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "Heartbeat received",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Heartbeat received" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174003",
+                    "status": "ONLINE",
+                    "lastHeartbeat": "2026-08-10T13:05:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Device not found" },
+          "400": { "description": "Device is locked" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    }
+  }
+}

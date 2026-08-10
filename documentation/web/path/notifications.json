@@ -1,0 +1,110 @@
+{
+  "paths": {
+    "/notifications": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get list notifications dengan pagination dan filter",
+        "operationId": "getNotifications",
+        "produces": ["application/json"],
+        "parameters": [
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "limit", "in": "query", "type": "integer", "default": 10 },
+          { "name": "type", "in": "query", "type": "string", "enum": ["EMAIL", "SMS", "PUSH"] },
+          { "name": "status", "in": "query", "type": "string", "enum": ["PENDING", "SENT", "FAILED"] }
+        ],
+        "responses": {
+          "200": {
+            "description": "List notifications",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "items": [{
+                      "id": "123e4567-e89b-12d3-a456-426614174004",
+                      "type": "EMAIL",
+                      "recipient": "user@example.com",
+                      "subject": "Invoice Reminder",
+                      "status": "SENT",
+                      "sentAt": "2026-08-10T12:00:00Z",
+                      "createdAt": "2026-08-10T11:55:00Z"
+                    }],
+                    "total": 150,
+                    "page": 1,
+                    "limit": 10
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/notifications/{id}": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get detail notification by ID",
+        "operationId": "getNotificationById",
+        "produces": ["application/json"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "Notification detail",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174004",
+                    "type": "EMAIL",
+                    "recipient": "user@example.com",
+                    "subject": "Invoice Reminder",
+                    "body": "Your invoice is due soon...",
+                    "status": "SENT",
+                    "sentAt": "2026-08-10T12:00:00Z",
+                    "createdAt": "2026-08-10T11:55:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Notification not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/notifications/{id}/resend": {
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Resend failed notification",
+        "operationId": "resendNotification",
+        "produces": ["application/json"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "Notification queued for resend",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Notification queued for resend" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174004",
+                    "status": "PENDING"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Notification not found" },
+          "400": { "description": "Only failed notifications can be resent" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    }
+  }
+}

@@ -1,0 +1,249 @@
+{
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get list users dengan pagination",
+        "operationId": "getUsers",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "default": 10
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "type": "string",
+            "enum": ["SUPER_ADMIN", "FINANCE_ADMIN", "SUPPORT_ADMIN", "VIEWER"]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List users",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "example": "123e4567-e89b-12d3-a456-426614174000" },
+                          "fullName": { "example": "John Doe" },
+                          "email": { "example": "john@example.com" },
+                          "role": { "example": "SUPER_ADMIN" },
+                          "createdAt": { "example": "2026-08-10T10:00:00Z" },
+                          "updatedAt": { "example": "2026-08-10T10:00:00Z" }
+                        }
+                      }
+                    },
+                    "total": { "example": 25 },
+                    "page": { "example": 1 },
+                    "limit": { "example": 10 }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create user baru",
+        "operationId": "createUser",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["fullName", "email", "password", "role"],
+              "properties": {
+                "fullName": {
+                  "type": "string",
+                  "example": "John Doe"
+                },
+                "email": {
+                  "type": "string",
+                  "example": "john@example.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "Password123!"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": ["SUPER_ADMIN", "FINANCE_ADMIN", "SUPPORT_ADMIN", "VIEWER"],
+                  "example": "VIEWER"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "User created successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "fullName": "John Doe",
+                    "email": "john@example.com",
+                    "role": "VIEWER"
+                  }
+                }
+              }
+            }
+          },
+          "409": { "description": "Email already exists" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get detail user by ID",
+        "operationId": "getUserById",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User detail",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "fullName": "John Doe",
+                    "email": "john@example.com",
+                    "role": "VIEWER",
+                    "createdAt": "2026-08-10T10:00:00Z",
+                    "updatedAt": "2026-08-10T10:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "User not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user",
+        "operationId": "updateUser",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "fullName": {
+                  "type": "string",
+                  "example": "John Updated"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": ["SUPER_ADMIN", "FINANCE_ADMIN", "SUPPORT_ADMIN", "VIEWER"],
+                  "example": "FINANCE_ADMIN"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "User updated successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "fullName": "John Updated",
+                    "email": "john@example.com",
+                    "role": "FINANCE_ADMIN"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "User not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Soft delete user",
+        "operationId": "deleteUser",
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "User deleted successfully" },
+                "data": { "example": null }
+              }
+            }
+          },
+          "404": { "description": "User not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    }
+  }
+}

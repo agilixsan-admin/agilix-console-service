@@ -1,0 +1,184 @@
+{
+  "paths": {
+    "/invoices": {
+      "get": {
+        "tags": ["Invoices"],
+        "summary": "Get list invoices dengan pagination dan filter",
+        "operationId": "getInvoices",
+        "produces": ["application/json"],
+        "parameters": [
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "limit", "in": "query", "type": "integer", "default": 10 },
+          { "name": "status", "in": "query", "type": "string", "enum": ["PENDING", "PAID", "CANCELLED", "OVERDUE"] },
+          { "name": "tenantId", "in": "query", "type": "string" }
+        ],
+        "responses": {
+          "200": {
+            "description": "List invoices",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "items": [{
+                      "id": "123e4567-e89b-12d3-a456-426614174002",
+                      "invoiceNumber": "INV-2026-08-001",
+                      "tenantId": "123e4567-e89b-12d3-a456-426614174001",
+                      "amount": 1500000,
+                      "dueDate": "2026-08-31T00:00:00Z",
+                      "status": "PENDING",
+                      "createdAt": "2026-08-10T10:00:00Z"
+                    }],
+                    "total": 100,
+                    "page": 1,
+                    "limit": 10
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      },
+      "post": {
+        "tags": ["Invoices"],
+        "summary": "Create invoice baru",
+        "operationId": "createInvoice",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "required": ["tenantId", "amount", "dueDate"],
+            "properties": {
+              "tenantId": { "type": "string", "example": "123e4567-e89b-12d3-a456-426614174001" },
+              "amount": { "type": "number", "example": 1500000 },
+              "dueDate": { "type": "string", "format": "date-time", "example": "2026-08-31T00:00:00Z" },
+              "description": { "type": "string", "example": "Monthly subscription fee" }
+            }
+          }
+        }],
+        "responses": {
+          "201": {
+            "description": "Invoice created",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Invoice created successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174002",
+                    "invoiceNumber": "INV-2026-08-001",
+                    "amount": 1500000,
+                    "status": "PENDING"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/invoices/{id}": {
+      "get": {
+        "tags": ["Invoices"],
+        "summary": "Get detail invoice by ID",
+        "operationId": "getInvoiceById",
+        "produces": ["application/json"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "Invoice detail",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174002",
+                    "invoiceNumber": "INV-2026-08-001",
+                    "tenantId": "123e4567-e89b-12d3-a456-426614174001",
+                    "amount": 1500000,
+                    "dueDate": "2026-08-31T00:00:00Z",
+                    "status": "PENDING",
+                    "paidAt": null,
+                    "createdAt": "2026-08-10T10:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Invoice not found" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/invoices/{id}/pay": {
+      "post": {
+        "tags": ["Invoices"],
+        "summary": "Mark invoice as paid",
+        "operationId": "payInvoice",
+        "produces": ["application/json"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "Invoice paid",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Invoice paid successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174002",
+                    "status": "PAID",
+                    "paidAt": "2026-08-10T11:00:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Invoice not found" },
+          "400": { "description": "Invoice already paid or cancelled" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    },
+    "/invoices/{id}/cancel": {
+      "post": {
+        "tags": ["Invoices"],
+        "summary": "Cancel invoice",
+        "operationId": "cancelInvoice",
+        "produces": ["application/json"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "type": "string" }],
+        "responses": {
+          "200": {
+            "description": "Invoice cancelled",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": { "example": true },
+                "message": { "example": "Invoice cancelled successfully" },
+                "data": {
+                  "example": {
+                    "id": "123e4567-e89b-12d3-a456-426614174002",
+                    "status": "CANCELLED"
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Invoice not found" },
+          "400": { "description": "Invoice already paid" }
+        },
+        "security": [{ "Bearer": [] }]
+      }
+    }
+  }
+}

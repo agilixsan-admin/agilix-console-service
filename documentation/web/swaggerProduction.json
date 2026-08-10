@@ -1,0 +1,30 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Agilix Console Service API Documentation - Production",
+    "version": "1.0.0",
+    "title": "Agilix Console Service API"
+  },
+  "host": "api.agilix.com",
+  "basePath": "/api/v1",
+  "schemes": ["https"],
+  "tags": [
+    { "name": "Auth", "description": "Authentication & authorization" },
+    { "name": "Users", "description": "User management" },
+    { "name": "Tenants", "description": "Tenant management" },
+    { "name": "Invoices", "description": "Invoice management" },
+    { "name": "POS Devices", "description": "POS device monitoring" },
+    { "name": "Notifications", "description": "Notification system" },
+    { "name": "Audit Logs", "description": "System audit logs" },
+    { "name": "Dashboard", "description": "Analytics dashboard" },
+    { "name": "Events", "description": "Server-Sent Events (SSE)" }
+  ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter token with format: Bearer {token}"
+    }
+  }
+}
