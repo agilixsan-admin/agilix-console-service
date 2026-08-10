@@ -1,5 +1,5 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsEnum,
   IsOptional,
   IsString,
@@ -25,6 +25,12 @@ export class UpdateUserDto {
   /**
    * Updated full display name.
    */
+  @ApiProperty({
+    description: 'Updated full display name of the user',
+    example: 'Jane Doe',
+    maxLength: 255,
+    required: false,
+  })
   @IsOptional()
   @IsString({ message: 'fullName must be a string' })
   @MaxLength(255, { message: 'fullName must not exceed 255 characters' })
@@ -34,6 +40,12 @@ export class UpdateUserDto {
    * Updated RBAC role.
    * Only SUPER_ADMIN may change roles (enforced at controller/guard level).
    */
+  @ApiProperty({
+    description: 'Updated RBAC role assigned to the user',
+    example: UserRole.SUPPORT_ADMIN,
+    enum: UserRole,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(UserRole, {
     message: `role must be one of: ${Object.values(UserRole).join(', ')}`,
