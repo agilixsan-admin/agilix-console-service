@@ -14,7 +14,7 @@ export const databaseConfig = registerAs('database', () => ({
   password: process.env.DB_PASSWORD ?? '',
   name: process.env.DB_NAME ?? 'agilix_console',
   ssl: process.env.DB_SSL === 'true',
-  logging: process.env.NODE_ENV === 'development',
+  logging: process.env.DB_LOGGING === 'true',
   synchronize: false, // ← WAJIB false — DATABASE_RULES.md § Migration Policy
 }));
 export const jwtConfig = registerAs('jwt', () => ({

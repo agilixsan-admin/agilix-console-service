@@ -31,6 +31,7 @@ import { CreatePosDevicesTable1723144000000 } from './migrations/1723144000000-C
 import { CreateNotificationsTable1723144100000 } from './migrations/1723144100000-CreateNotificationsTable';
 import { AddViewerRole1723144200000 } from './migrations/1723144200000-AddViewerRole';
 import { RequestContextMiddleware } from './middlewares/request-context.middleware';
+import { HttpLoggerMiddleware } from './middlewares/http-logger.middleware';
 import { InvoiceModule } from './routes/modules/invoice.module';
 import { UserModule } from './routes/modules/user.module';
 import { AuthModule } from './routes/modules/auth.module';
@@ -132,7 +133,7 @@ import { DashboardModule } from './routes/modules/dashboard.module';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
-      .apply(RequestContextMiddleware)
+      .apply(HttpLoggerMiddleware, RequestContextMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }
