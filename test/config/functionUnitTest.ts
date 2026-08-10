@@ -258,6 +258,8 @@ export function mockEventPublisherService() {
     publishDeviceRegistered: jest.fn(),
     publishDeviceOnline: jest.fn(),
     publishDeviceOffline: jest.fn(),
+    publishNotificationSent: jest.fn(),
+    publishNotificationFailed: jest.fn(),
   };
 }
 
@@ -339,5 +341,40 @@ export function mockPosDeviceRepository() {
     update: jest.fn(),
     delete: jest.fn(),
     countByStatus: jest.fn(),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Notification Builder
+// ---------------------------------------------------------------------------
+
+import { Notification } from '../../src/models/notification.model';
+import { NotificationStatus } from '../../src/types/enums/notification-status.enum';
+import { NotificationType } from '../../src/types/enums/notification-type.enum';
+import { TEST_NOTIFICATION_ID } from './constants';
+
+export function buildNotification(
+  overrides: Partial<Notification> = {},
+): Notification {
+  const notification = new Notification();
+  notification.id = TEST_NOTIFICATION_ID;
+  notification.tenantId = TEST_TENANT_ID;
+  notification.type = NotificationType.INVOICE_EMAIL;
+  notification.recipient = TEST_OWNER_EMAIL;
+  notification.subject = 'Invoice Tagihan Bulan Ini';
+  notification.content = 'Silakan bayar tagihan Anda sebelum jatuh tempo.';
+  notification.status = NotificationStatus.PENDING;
+  notification.sentAt = null;
+  notification.failureReason = null;
+  notification.createdAt = TEST_CREATED_AT;
+  return Object.assign(notification, overrides);
+}
+
+export function mockNotificationRepository() {
+  return {
+    findById: jest.fn(),
+    findAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
   };
 }
