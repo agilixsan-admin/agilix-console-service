@@ -71,4 +71,22 @@ export class TenantRepository {
   async softDelete(id: string): Promise<void> {
     await this.repo.softDelete(id);
   }
+
+  async countByStatus(status: TenantStatus): Promise<number> {
+    return this.repo.count({ where: { status } });
+  }
+
+  async getMonthlyGrowth(months: number): Promise<{ month: string; count: number }[]> {
+    const rows = await this.repo
+      .createQueryBuilder('tenant')
+      .select("TO_CHAR(tenant.createdAt, 'YYYY-MM')", 'month')
+      .addSelect('COUNT(*)', 'count')
+      .where("tenant.createdAt >= NOW() - INTERVAL ':months months'", { months })
+      .andWhere('tenant.deletedAt IS NULL')
+      .groupBy("TO_CHAR(tenant.createdAt, 'YYYY-MM')")
+      .orderBy('month', 'ASC')
+      .getRawMany<{ month: string; count: string }>();
+
+    return rows.map((r) => ({ month: r.month, count: parseInt(r.count, 10) }));
+  }
 }

@@ -76,4 +76,28 @@ export class InvoiceRepository {
   async countByBillingPeriod(billingPeriod: string): Promise<number> {
     return this.repo.count({ where: { billingPeriod } });
   }
+
+  async countOverdue(): Promise<number> {
+    return this.repo
+      .createQueryBuilder('invoice')
+      .where('invoice.status = :status', { status: InvoiceStatus.PENDING })
+      .andWhere('invoice.dueDate < NOW()')
+      .getCount();
+  }
+
+  async getRevenueByPeriod(
+    months: number,
+  ): Promise<{ period: string; total: number }[]> {
+    const rows = await this.repo
+      .createQueryBuilder('invoice')
+      .select('invoice.billingPeriod', 'period')
+      .addSelect('SUM(invoice.amount)', 'total')
+      .where('invoice.status = :status', { status: InvoiceStatus.PAID })
+      .andWhere("TO_DATE(invoice.billingPeriod, 'YYYY-MM') >= DATE_TRUNC('month', NOW()) - INTERVAL ':months months'", { months })
+      .groupBy('invoice.billingPeriod')
+      .orderBy('invoice.billingPeriod', 'ASC')
+      .getRawMany<{ period: string; total: string }>();
+
+    return rows.map((r) => ({ period: r.period, total: parseFloat(r.total) }));
+  }
 }
