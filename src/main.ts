@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { GLOBAL_PREFIX } from './configs/route';
@@ -65,6 +66,37 @@ async function bootstrap() {
   });
 
   // ---------------------------------------------------------------------------
+  // Swagger API Documentation
+  // Available at: /api-docs
+  // ---------------------------------------------------------------------------
+  const config = new DocumentBuilder()
+    .setTitle('Agilix Console Service API')
+    .setDescription('SaaS Monitoring Tenant POS - API Documentation')
+    .setVersion('1.0.0')
+    .addBearerAuth()
+    .addTag('Auth', 'Authentication & authorization')
+    .addTag('Users', 'User management')
+    .addTag('Tenants', 'Tenant management')
+    .addTag('Invoices', 'Invoice management')
+    .addTag('POS Devices', 'POS device monitoring')
+    .addTag('Notifications', 'Notification system')
+    .addTag('Audit Logs', 'System audit logs')
+    .addTag('Dashboard', 'Analytics dashboard')
+    .addTag('Events', 'Server-Sent Events (SSE)')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api-docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      docExpansion: 'none',
+      filter: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
+
+  // ---------------------------------------------------------------------------
   // Start server
   // ---------------------------------------------------------------------------
   const port = process.env.PORT ?? 3000;
@@ -72,6 +104,9 @@ async function bootstrap() {
 
   console.log(
     `🚀 Agilix Console Service running on: http://localhost:${port}/${GLOBAL_PREFIX}`,
+  );
+  console.log(
+    `📚 API Documentation available at: http://localhost:${port}/api-docs`,
   );
 }
 
