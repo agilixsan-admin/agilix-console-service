@@ -34,7 +34,10 @@ describe('InvoiceService', () => {
         InvoiceService,
         { provide: InvoiceRepository, useFactory: mockInvoiceRepository },
         { provide: AuditLogService, useFactory: mockAuditLogService },
-        { provide: EventPublisherService, useFactory: mockEventPublisherService },
+        {
+          provide: EventPublisherService,
+          useFactory: mockEventPublisherService,
+        },
       ],
     }).compile();
 
@@ -151,7 +154,10 @@ describe('InvoiceService', () => {
 
     it('harus membayar invoice, memanggil AuditLogService, dan mempublish payment.received', async () => {
       const invoice = buildInvoice({ status: InvoiceStatus.PENDING });
-      const paid = buildInvoice({ status: InvoiceStatus.PAID, paidAt: TEST_PAID_AT });
+      const paid = buildInvoice({
+        status: InvoiceStatus.PAID,
+        paidAt: TEST_PAID_AT,
+      });
       repository.findById.mockResolvedValue(invoice);
       repository.update.mockResolvedValue(paid);
       auditLogService.log.mockResolvedValue(undefined);
@@ -209,7 +215,7 @@ describe('InvoiceService', () => {
   // -------------------------------------------------------------------------
 
   describe('cancel', () => {
-    it('harus membatalkan invoice dan memanggil AuditLogService', async () => {
+    it('harus membatalkan invoice, memanggil AuditLogService, dan mempublish invoice.cancelled', async () => {
       const invoice = buildInvoice({ status: InvoiceStatus.PENDING });
       const cancelled = buildInvoice({ status: InvoiceStatus.CANCELLED });
       repository.findById.mockResolvedValue(invoice);
@@ -224,6 +230,10 @@ describe('InvoiceService', () => {
       expect(auditLogService.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: AuditAction.INVOICE_CANCELLED }),
       );
+      expect(eventPublisher.publishInvoiceCancelled).toHaveBeenCalledWith({
+        invoiceId: TEST_INVOICE_ID,
+        tenantId: invoice.tenantId,
+      });
       expect(result.status).toBe(InvoiceStatus.CANCELLED);
     });
 

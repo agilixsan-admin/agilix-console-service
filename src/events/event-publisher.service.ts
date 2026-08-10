@@ -106,4 +106,16 @@ export class EventPublisherService {
       data: payload,
     });
   }
+
+  publishInvoiceCancelled(payload: {
+    invoiceId: string;
+    tenantId: string;
+  }): void {
+    this.realtimeService.publish({
+      event: 'invoice.cancelled',
+      version: 1,
+      timestamp: new Date().toISOString(),
+      data: payload,
+    });
+  }
 }

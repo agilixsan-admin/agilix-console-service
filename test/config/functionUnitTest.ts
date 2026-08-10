@@ -159,7 +159,8 @@ export function mockJwtService() {
 export function mockConfigService(overrides: Record<string, unknown> = {}) {
   const defaults: Record<string, unknown> = {
     'bcrypt.saltRounds': 10,
-    'jwt.secret': 'test-jwt-secret-fixture',
+    'jwt.secret': 'test-jwt-secret-fixture-minimum-32-characters-long',
+    'jwt.refreshSecret': 'test-jwt-refresh-secret-fixture-minimum-32-characters',
     'jwt.expiresIn': '30m',
     'jwt.refreshExpiresIn': '7d',
     ...overrides,
@@ -253,6 +254,7 @@ export function mockEventPublisherService() {
     publishInvoiceGenerated: jest.fn(),
     publishInvoiceOverdue: jest.fn(),
     publishPaymentReceived: jest.fn(),
+    publishInvoiceCancelled: jest.fn(),
   };
 }
 

@@ -34,7 +34,7 @@ export class InvoiceService {
       tenantId: query.tenantId,
       status: query.status,
       billingPeriod: query.billingPeriod,
-    } as FindAllInvoicesOptions);
+    });
   }
 
   async findById(id: string): Promise<Invoice> {
@@ -142,6 +142,11 @@ export class InvoiceService {
       targetId: id,
     });
 
+    this.eventPublisher.publishInvoiceCancelled({
+      invoiceId: id,
+      tenantId: invoice.tenantId,
+    });
+
     return updated;
   }
 
@@ -149,7 +154,8 @@ export class InvoiceService {
     const [year, month] = billingPeriod.split('-');
     const prefix = `INV-${year}${month}`;
 
-    const count = await this.invoiceRepository.countByBillingPeriod(billingPeriod);
+    const count =
+      await this.invoiceRepository.countByBillingPeriod(billingPeriod);
     const sequence = String(count + 1).padStart(4, '0');
 
     return `${prefix}-${sequence}`;
