@@ -41,13 +41,19 @@ export class AuthController extends BaseController {
     @Body() dto: LoginDto,
     @Req() req: Request & { ipAddress?: string; userAgent?: string },
   ): Promise<ApiResponse<LoginResponse>> {
-    const result = await this.authService.login(dto, req.ipAddress, req.userAgent);
+    const result = await this.authService.login(
+      dto,
+      req.ipAddress,
+      req.userAgent,
+    );
     return this.success(result, 'Login successful');
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body() dto: RefreshTokenDto): Promise<ApiResponse<RefreshResponse>> {
+  async refresh(
+    @Body() dto: RefreshTokenDto,
+  ): Promise<ApiResponse<RefreshResponse>> {
     const result = await this.authService.refresh(dto);
     return this.success(result, 'Token refreshed successfully');
   }
@@ -60,7 +66,12 @@ export class AuthController extends BaseController {
     @Body() body: RefreshTokenDto,
     @Req() req: Request & { ipAddress?: string; userAgent?: string },
   ): Promise<ApiResponse<void>> {
-    await this.authService.logout(actor.id, req.ipAddress, req.userAgent, body.refreshToken);
+    await this.authService.logout(
+      actor.id,
+      req.ipAddress,
+      req.userAgent,
+      body.refreshToken,
+    );
     return this.noContent('Logged out successfully');
   }
 

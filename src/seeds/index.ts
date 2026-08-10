@@ -1,9 +1,8 @@
-import { DataSource } from 'typeorm';
-import { dbConfig } from '../configs/db';
+import { AppDataSource } from '../configs/db';
 import { seedSuperAdmin } from './super-admin.seed';
 
 async function runSeeds() {
-  const dataSource = new DataSource(dbConfig);
+  const dataSource = AppDataSource;
 
   try {
     await dataSource.initialize();

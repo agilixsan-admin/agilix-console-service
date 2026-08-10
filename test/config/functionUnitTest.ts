@@ -160,7 +160,8 @@ export function mockConfigService(overrides: Record<string, unknown> = {}) {
   const defaults: Record<string, unknown> = {
     'bcrypt.saltRounds': 10,
     'jwt.secret': 'test-jwt-secret-fixture-minimum-32-characters-long',
-    'jwt.refreshSecret': 'test-jwt-refresh-secret-fixture-minimum-32-characters',
+    'jwt.refreshSecret':
+      'test-jwt-refresh-secret-fixture-minimum-32-characters',
     'jwt.expiresIn': '30m',
     'jwt.refreshExpiresIn': '7d',
     ...overrides,
@@ -176,7 +177,7 @@ export function mockConfigService(overrides: Record<string, unknown> = {}) {
 
 import { AuditLog } from '../../src/models/audit-log.model';
 import { AuditAction } from '../../src/types/enums/audit-action.enum';
-import { TEST_AUDIT_LOG_ID, TEST_USER_ID } from './constants';
+import { TEST_AUDIT_LOG_ID } from './constants';
 
 export function buildAuditLog(overrides: Partial<AuditLog> = {}): AuditLog {
   const log = new AuditLog();

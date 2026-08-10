@@ -76,11 +76,21 @@ describe('DashboardService', () => {
 
       await service.getSummary();
 
-      expect(tenantRepository.countByStatus).toHaveBeenCalledWith(TenantStatus.ACTIVE);
-      expect(tenantRepository.countByStatus).toHaveBeenCalledWith(TenantStatus.LOCKED);
-      expect(tenantRepository.countByStatus).toHaveBeenCalledWith(TenantStatus.SUSPENDED);
-      expect(tenantRepository.countByStatus).toHaveBeenCalledWith(TenantStatus.EXPIRED);
-      expect(posDeviceRepository.countByStatus).toHaveBeenCalledWith(DeviceStatus.ONLINE);
+      expect(tenantRepository.countByStatus).toHaveBeenCalledWith(
+        TenantStatus.ACTIVE,
+      );
+      expect(tenantRepository.countByStatus).toHaveBeenCalledWith(
+        TenantStatus.LOCKED,
+      );
+      expect(tenantRepository.countByStatus).toHaveBeenCalledWith(
+        TenantStatus.SUSPENDED,
+      );
+      expect(tenantRepository.countByStatus).toHaveBeenCalledWith(
+        TenantStatus.EXPIRED,
+      );
+      expect(posDeviceRepository.countByStatus).toHaveBeenCalledWith(
+        DeviceStatus.ONLINE,
+      );
     });
 
     it('harus menjalankan semua query secara paralel via Promise.all', async () => {

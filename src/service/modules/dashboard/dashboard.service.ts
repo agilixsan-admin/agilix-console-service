@@ -49,7 +49,8 @@ export class DashboardService {
     ]);
 
     return {
-      totalTenants: activeTenants + lockedTenants + suspendedTenants + expiredTenants,
+      totalTenants:
+        activeTenants + lockedTenants + suspendedTenants + expiredTenants,
       activeTenants,
       lockedTenants,
       overdueInvoices,

@@ -47,9 +47,7 @@ export class NotificationController extends BaseController {
     UserRole.VIEWER,
   )
   @HttpCode(HttpStatus.OK)
-  async findById(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-  ) {
+  async findById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     const notification = await this.notificationService.findById(id);
     return this.success(notification, 'Notification retrieved successfully');
   }

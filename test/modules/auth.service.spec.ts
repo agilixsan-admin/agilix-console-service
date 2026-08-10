@@ -114,7 +114,10 @@ describe('AuthService', () => {
       auditLogService.log.mockResolvedValue(undefined);
       jwtService.sign.mockReturnValue(TEST_ACCESS_TOKEN);
 
-      await service.login({ email: SUPER_ADMIN_EMAIL, password: TEST_PASSWORD_PLAIN });
+      await service.login({
+        email: SUPER_ADMIN_EMAIL,
+        password: TEST_PASSWORD_PLAIN,
+      });
 
       // Call kedua dari jwtService.sign harus menyertakan secret refreshSecret
       expect(jwtService.sign).toHaveBeenNthCalledWith(
@@ -228,7 +231,12 @@ describe('AuthService', () => {
     it('harus memblacklist refresh token jika disediakan', async () => {
       auditLogService.log.mockResolvedValue(undefined);
 
-      await service.logout(TEST_USER_ID, undefined, undefined, TEST_REFRESH_TOKEN);
+      await service.logout(
+        TEST_USER_ID,
+        undefined,
+        undefined,
+        TEST_REFRESH_TOKEN,
+      );
 
       expect(tokenBlacklist.blacklist).toHaveBeenCalledWith(TEST_REFRESH_TOKEN);
     });

@@ -20,7 +20,7 @@ export async function seedSuperAdmin(dataSource: DataSource): Promise<void> {
   const superAdmin = userRepository.create({
     fullName: 'Super Administrator',
     email: 'admin@agilix.com',
-    password: hashedPassword,
+    passwordHash: hashedPassword,
     role: UserRole.SUPER_ADMIN,
   });
 

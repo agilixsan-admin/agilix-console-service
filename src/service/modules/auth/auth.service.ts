@@ -72,7 +72,8 @@ export class AuthService {
     // untuk mencegah token substitution attack.
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('jwt.refreshSecret'),
-      expiresIn: this.configService.get<string>('jwt.refreshExpiresIn') ?? '7d',
+      expiresIn: (this.configService.get<string>('jwt.refreshExpiresIn') ??
+        '7d') as `${number}${'s' | 'm' | 'h' | 'd'}`,
     });
 
     await this.auditLogService.log({

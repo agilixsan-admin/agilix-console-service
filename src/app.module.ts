@@ -41,7 +41,6 @@ import { PosDeviceModule } from './routes/modules/pos-device.module';
 import { NotificationModule } from './routes/modules/notification.module';
 import { QueuesModule } from './queues/queues.module';
 import { DashboardModule } from './routes/modules/dashboard.module';
-import { DashboardModule } from './routes/modules/dashboard.module';
 
 @Module({
   imports: [

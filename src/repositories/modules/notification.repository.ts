@@ -70,10 +70,7 @@ export class NotificationRepository {
     return this.repo.save(notification);
   }
 
-  async update(
-    id: string,
-    data: Partial<Notification>,
-  ): Promise<Notification> {
+  async update(id: string, data: Partial<Notification>): Promise<Notification> {
     await this.repo.update(id, data);
     return this.repo.findOneOrFail({ where: { id } });
   }

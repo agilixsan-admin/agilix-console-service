@@ -69,10 +69,7 @@ export class NotificationService {
     return updated;
   }
 
-  async markFailed(
-    id: string,
-    failureReason: string,
-  ): Promise<Notification> {
+  async markFailed(id: string, failureReason: string): Promise<Notification> {
     await this.findById(id);
 
     const updated = await this.notificationRepository.update(id, {

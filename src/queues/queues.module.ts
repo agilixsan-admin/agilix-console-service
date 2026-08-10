@@ -36,8 +36,6 @@ import { NotificationModule } from '../routes/modules/notification.module';
     InvoiceReminderProcessor,
     EmailNotificationProcessor,
   ],
-  exports: [
-    BullModule,
-  ],
+  exports: [BullModule],
 })
 export class QueuesModule {}

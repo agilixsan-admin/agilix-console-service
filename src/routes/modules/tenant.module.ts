@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Tenant } from '../../../models/tenant.model';
-import { TenantRepository } from '../../../repositories/modules/tenant.repository';
+import { Tenant } from '../../models/tenant.model';
+import { TenantRepository } from '../../repositories/modules/tenant.repository';
 import { TenantService } from '../../service/modules/tenants/tenant.service';
 import { TenantController } from '../../controllers/modules/tenants/tenant.controller';
 import { AuditLogModule } from './audit-log.module';

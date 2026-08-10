@@ -93,7 +93,10 @@ export class InvoiceRepository {
       .select('invoice.billingPeriod', 'period')
       .addSelect('SUM(invoice.amount)', 'total')
       .where('invoice.status = :status', { status: InvoiceStatus.PAID })
-      .andWhere("TO_DATE(invoice.billingPeriod, 'YYYY-MM') >= DATE_TRUNC('month', NOW()) - INTERVAL ':months months'", { months })
+      .andWhere(
+        "TO_DATE(invoice.billingPeriod, 'YYYY-MM') >= DATE_TRUNC('month', NOW()) - INTERVAL ':months months'",
+        { months },
+      )
       .groupBy('invoice.billingPeriod')
       .orderBy('invoice.billingPeriod', 'ASC')
       .getRawMany<{ period: string; total: string }>();

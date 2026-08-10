@@ -53,9 +53,7 @@ export class PosDeviceController extends BaseController {
     UserRole.VIEWER,
   )
   @HttpCode(HttpStatus.OK)
-  async findById(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-  ) {
+  async findById(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     const device = await this.posDeviceService.findById(id);
     return this.success(device, 'POS device retrieved successfully');
   }
@@ -63,10 +61,7 @@ export class PosDeviceController extends BaseController {
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
   @HttpCode(HttpStatus.CREATED)
-  async create(
-    @Body() dto: CreatePosDeviceDto,
-    @CurrentUser() actor: User,
-  ) {
+  async create(@Body() dto: CreatePosDeviceDto, @CurrentUser() actor: User) {
     const device = await this.posDeviceService.create(dto, actor.id);
     return this.success(device, 'POS device registered successfully');
   }

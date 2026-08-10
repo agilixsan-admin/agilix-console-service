@@ -44,10 +44,11 @@ export class EmailNotificationProcessor extends WorkerHost {
 
       await this.notificationService.markSent(notificationId, 'system');
 
-      this.logger.log(`Email sent successfully for notification ${notificationId}`);
+      this.logger.log(
+        `Email sent successfully for notification ${notificationId}`,
+      );
     } catch (error) {
-      const reason =
-        error instanceof Error ? error.message : 'Unknown error';
+      const reason = error instanceof Error ? error.message : 'Unknown error';
 
       this.logger.error(
         `Failed to send email for notification ${notificationId}: ${reason}`,

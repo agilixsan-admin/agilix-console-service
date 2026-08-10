@@ -85,9 +85,9 @@ describe('NotificationService', () => {
     it('harus throw NotFoundException jika notification tidak ada', async () => {
       repository.findById.mockResolvedValue(null);
 
-      await expect(
-        service.findById('nonexistent-id'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.findById('nonexistent-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -122,7 +122,9 @@ describe('NotificationService', () => {
 
   describe('markSent', () => {
     it('harus update status SENT, memanggil AuditLogService, dan mempublish notification.sent', async () => {
-      const notification = buildNotification({ status: NotificationStatus.PENDING });
+      const notification = buildNotification({
+        status: NotificationStatus.PENDING,
+      });
       const sent = buildNotification({ status: NotificationStatus.SENT });
       repository.findById.mockResolvedValue(notification);
       repository.update.mockResolvedValue(sent);

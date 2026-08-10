@@ -37,7 +37,8 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
       lazyConnect: true,
     });
 
-    const rawTtl = this.configService.get<string>('jwt.refreshExpiresIn') ?? '7d';
+    const rawTtl =
+      this.configService.get<string>('jwt.refreshExpiresIn') ?? '7d';
     this.refreshTtlSeconds = this.parseTtlToSeconds(rawTtl);
   }
 

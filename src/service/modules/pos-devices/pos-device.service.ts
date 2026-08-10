@@ -68,7 +68,10 @@ export class PosDeviceService {
       action: AuditAction.DEVICE_REGISTERED,
       targetType: 'PosDevice',
       targetId: device.id,
-      metadata: { deviceCode: device.deviceCode, deviceName: device.deviceName },
+      metadata: {
+        deviceCode: device.deviceCode,
+        deviceName: device.deviceName,
+      },
     });
 
     this.eventPublisher.publishDeviceRegistered({
@@ -104,14 +107,13 @@ export class PosDeviceService {
     return updated;
   }
 
-  async heartbeat(
-    id: string,
-    dto: HeartbeatPosDeviceDto,
-  ): Promise<PosDevice> {
+  async heartbeat(id: string, dto: HeartbeatPosDeviceDto): Promise<PosDevice> {
     const device = await this.findById(id);
 
     if (device.isLocked) {
-      throw new BadRequestException('Device is locked and cannot send heartbeat');
+      throw new BadRequestException(
+        'Device is locked and cannot send heartbeat',
+      );
     }
 
     const wasOffline = device.status !== DeviceStatus.ONLINE;

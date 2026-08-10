@@ -18,9 +18,7 @@ export class InvoiceOverdueProcessor extends WorkerHost {
   async process(job: Job<InvoiceOverdueJobPayload>): Promise<void> {
     const { invoiceId, tenantId, dueDate } = job.data;
 
-    this.logger.log(
-      `Processing overdue check for invoice ${invoiceId}`,
-    );
+    this.logger.log(`Processing overdue check for invoice ${invoiceId}`);
 
     this.eventPublisher.publishInvoiceOverdue({
       invoiceId,
@@ -28,8 +26,6 @@ export class InvoiceOverdueProcessor extends WorkerHost {
       dueDate,
     });
 
-    this.logger.log(
-      `invoice.overdue event published for invoice ${invoiceId}`,
-    );
+    this.logger.log(`invoice.overdue event published for invoice ${invoiceId}`);
   }
 }

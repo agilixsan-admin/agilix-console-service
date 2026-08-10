@@ -20,7 +20,8 @@ import { RolesGuard } from '../../guards/roles.guard';
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('jwt.secret'),
         signOptions: {
-          expiresIn: config.get<string>('jwt.expiresIn') ?? '30m',
+          expiresIn: (config.get<string>('jwt.expiresIn') ??
+            '30m') as `${number}${'s' | 'm' | 'h' | 'd'}`,
         },
       }),
     }),
@@ -28,7 +29,13 @@ import { RolesGuard } from '../../guards/roles.guard';
     AuditLogModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, TokenBlacklistService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    RolesGuard,
+    TokenBlacklistService,
+  ],
   exports: [AuthService, JwtAuthGuard, RolesGuard, JwtModule],
 })
 export class AuthModule {}

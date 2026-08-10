@@ -37,7 +37,10 @@ describe('PosDeviceService', () => {
         PosDeviceService,
         { provide: PosDeviceRepository, useFactory: mockPosDeviceRepository },
         { provide: AuditLogService, useFactory: mockAuditLogService },
-        { provide: EventPublisherService, useFactory: mockEventPublisherService },
+        {
+          provide: EventPublisherService,
+          useFactory: mockEventPublisherService,
+        },
       ],
     }).compile();
 
@@ -223,9 +226,7 @@ describe('PosDeviceService', () => {
     });
 
     it('harus throw BadRequestException jika device terkunci', async () => {
-      repository.findById.mockResolvedValue(
-        buildPosDevice({ isLocked: true }),
-      );
+      repository.findById.mockResolvedValue(buildPosDevice({ isLocked: true }));
 
       await expect(
         service.heartbeat(TEST_DEVICE_ID, heartbeatDto),
