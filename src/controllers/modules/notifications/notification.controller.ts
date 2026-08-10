@@ -9,6 +9,13 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as SwaggerResponse,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { BaseController } from '../../base-controller';
 import { NotificationService } from '../../../service/modules/notifications/notification.service';
 import { ListNotificationsQueryDto } from '../../../dto/notification/list-notifications-query.dto';
@@ -19,6 +26,8 @@ import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { User } from '../../../models/user.model';
 import { UserRole } from '../../../types/enums/user-role.enum';
 
+@ApiTags('Notifications')
+@ApiBearerAuth()
 @Controller('notifications')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class NotificationController extends BaseController {
@@ -26,6 +35,10 @@ export class NotificationController extends BaseController {
     super();
   }
 
+  @ApiOperation({ summary: 'Get list notifications dengan pagination dan filter' })
+  @SwaggerResponse({ status: 200, description: 'Notifications retrieved successfully' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get()
   @Roles(
     UserRole.SUPER_ADMIN,
@@ -39,6 +52,12 @@ export class NotificationController extends BaseController {
     return this.paginated(result, 'Notifications retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Get detail notification by ID' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({ status: 200, description: 'Notification retrieved successfully' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
+  @SwaggerResponse({ status: 404, description: 'Notification not found' })
   @Get(':id')
   @Roles(
     UserRole.SUPER_ADMIN,
@@ -52,6 +71,13 @@ export class NotificationController extends BaseController {
     return this.success(notification, 'Notification retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Kirim ulang notification yang gagal' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({ status: 200, description: 'Notification queued for resend' })
+  @SwaggerResponse({ status: 400, description: 'Notification tidak dapat dikirim ulang' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
+  @SwaggerResponse({ status: 404, description: 'Notification not found' })
   @Post(':id/resend')
   @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)

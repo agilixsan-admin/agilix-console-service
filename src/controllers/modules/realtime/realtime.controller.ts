@@ -6,6 +6,12 @@ import {
   Sse,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as SwaggerResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { Observable, map } from 'rxjs';
 import { RealtimeService, SseEvent } from '../../../events/realtime.service';
 import { JwtAuthGuard } from '../../../guards/jwt-auth.guard';
@@ -13,11 +19,17 @@ import { RolesGuard } from '../../../guards/roles.guard';
 import { Roles } from '../../../decorators/roles.decorator';
 import { UserRole } from '../../../types/enums/user-role.enum';
 
+@ApiTags('Events')
+@ApiBearerAuth()
 @Controller('events')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class RealtimeController {
   constructor(private readonly realtimeService: RealtimeService) {}
 
+  @ApiOperation({ summary: 'Subscribe ke Server-Sent Events (SSE) stream realtime' })
+  @SwaggerResponse({ status: 200, description: 'SSE stream connected' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get()
   @Roles(
     UserRole.SUPER_ADMIN,

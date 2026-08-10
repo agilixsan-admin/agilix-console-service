@@ -12,6 +12,15 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as SwaggerResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { BaseController } from '../../base-controller';
 import { UserService } from '../../../service/modules/users/user.service';
 import { CreateUserDto } from '../../../dto/user/create-user.dto';
@@ -25,6 +34,8 @@ import { Roles } from '../../../decorators/roles.decorator';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { UserRole } from '../../../types/enums/user-role.enum';
 
+@ApiTags('Users')
+@ApiBearerAuth()
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.SUPER_ADMIN)
@@ -33,6 +44,10 @@ export class UserController extends BaseController {
     super();
   }
 
+  @ApiOperation({ summary: 'Get list users dengan pagination dan filter' })
+  @SwaggerResponse({ status: 200, description: 'Users retrieved successfully' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAll(
@@ -42,6 +57,10 @@ export class UserController extends BaseController {
     return this.paginated(result, 'Users retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Get detail user by ID' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({ status: 200, description: 'User retrieved successfully' })
+  @SwaggerResponse({ status: 404, description: 'User not found' })
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findById(
@@ -51,6 +70,10 @@ export class UserController extends BaseController {
     return this.success(user, 'User retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Create user baru' })
+  @ApiBody({ type: CreateUserDto })
+  @SwaggerResponse({ status: 201, description: 'User created successfully' })
+  @SwaggerResponse({ status: 409, description: 'Email already exists' })
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
@@ -61,6 +84,11 @@ export class UserController extends BaseController {
     return this.success(user, 'User created successfully');
   }
 
+  @ApiOperation({ summary: 'Update user' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiBody({ type: UpdateUserDto })
+  @SwaggerResponse({ status: 200, description: 'User updated successfully' })
+  @SwaggerResponse({ status: 404, description: 'User not found' })
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async update(
@@ -72,6 +100,13 @@ export class UserController extends BaseController {
     return this.success(user, 'User updated successfully');
   }
 
+  @ApiOperation({ summary: 'Deactivate user' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'User deactivated successfully',
+  })
+  @SwaggerResponse({ status: 404, description: 'User not found' })
   @Patch(':id/deactivate')
   @HttpCode(HttpStatus.OK)
   async deactivate(
@@ -82,6 +117,10 @@ export class UserController extends BaseController {
     return this.success(user, 'User deactivated successfully');
   }
 
+  @ApiOperation({ summary: 'Soft delete user' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({ status: 200, description: 'User deleted successfully' })
+  @SwaggerResponse({ status: 404, description: 'User not found' })
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async remove(

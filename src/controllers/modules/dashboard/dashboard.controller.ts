@@ -7,6 +7,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as SwaggerResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { BaseController } from '../../base-controller';
 import { DashboardService } from '../../../service/modules/dashboard/dashboard.service';
 import { JwtAuthGuard } from '../../../guards/jwt-auth.guard';
@@ -22,6 +28,8 @@ class DashboardPeriodQueryDto {
   months?: number;
 }
 
+@ApiTags('Dashboard')
+@ApiBearerAuth()
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DashboardController extends BaseController {
@@ -29,6 +37,10 @@ export class DashboardController extends BaseController {
     super();
   }
 
+  @ApiOperation({ summary: 'Get ringkasan data dashboard (tenant, invoice, device)' })
+  @SwaggerResponse({ status: 200, description: 'Dashboard summary retrieved successfully' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get('summary')
   @Roles(
     UserRole.SUPER_ADMIN,
@@ -42,6 +54,10 @@ export class DashboardController extends BaseController {
     return this.success(result, 'Dashboard summary retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Get data pertumbuhan tenant per bulan' })
+  @SwaggerResponse({ status: 200, description: 'Tenant growth retrieved successfully' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get('tenant-growth')
   @Roles(UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN)
   @HttpCode(HttpStatus.OK)
@@ -50,6 +66,10 @@ export class DashboardController extends BaseController {
     return this.success(result, 'Tenant growth retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Get ringkasan pendapatan per bulan' })
+  @SwaggerResponse({ status: 200, description: 'Revenue summary retrieved successfully' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get('revenue-summary')
   @Roles(UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN)
   @HttpCode(HttpStatus.OK)

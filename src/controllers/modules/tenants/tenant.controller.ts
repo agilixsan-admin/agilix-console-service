@@ -12,6 +12,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as SwaggerResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { BaseController } from '../../base-controller';
 import { TenantService } from '../../../service/modules/tenants/tenant.service';
 import { CreateTenantDto } from '../../../dto/tenant/create-tenant.dto';
@@ -24,6 +32,8 @@ import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { User } from '../../../models/user.model';
 import { UserRole } from '../../../types/enums/user-role.enum';
 
+@ApiTags('Tenants')
+@ApiBearerAuth()
 @Controller('tenants')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class TenantController extends BaseController {
@@ -31,6 +41,11 @@ export class TenantController extends BaseController {
     super();
   }
 
+  @ApiOperation({ summary: 'Get list tenants dengan pagination dan filter' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Tenants retrieved successfully',
+  })
   @Get()
   @Roles(
     UserRole.SUPER_ADMIN,
@@ -44,6 +59,13 @@ export class TenantController extends BaseController {
     return this.paginated(result, 'Tenants retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Get detail tenant by ID' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Tenant retrieved successfully',
+  })
+  @SwaggerResponse({ status: 404, description: 'Tenant not found' })
   @Get(':id')
   @Roles(
     UserRole.SUPER_ADMIN,
@@ -57,6 +79,10 @@ export class TenantController extends BaseController {
     return this.success(tenant, 'Tenant retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Create tenant baru' })
+  @ApiBody({ type: CreateTenantDto })
+  @SwaggerResponse({ status: 201, description: 'Tenant created successfully' })
+  @SwaggerResponse({ status: 409, description: 'Email already exists' })
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
   @HttpCode(HttpStatus.CREATED)
@@ -65,6 +91,11 @@ export class TenantController extends BaseController {
     return this.success(tenant, 'Tenant created successfully');
   }
 
+  @ApiOperation({ summary: 'Update tenant' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiBody({ type: UpdateTenantDto })
+  @SwaggerResponse({ status: 200, description: 'Tenant updated successfully' })
+  @SwaggerResponse({ status: 404, description: 'Tenant not found' })
   @Patch(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
   @HttpCode(HttpStatus.OK)
@@ -77,6 +108,11 @@ export class TenantController extends BaseController {
     return this.success(tenant, 'Tenant updated successfully');
   }
 
+  @ApiOperation({ summary: 'Lock tenant (suspend access)' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({ status: 200, description: 'Tenant locked successfully' })
+  @SwaggerResponse({ status: 404, description: 'Tenant not found' })
+  @SwaggerResponse({ status: 400, description: 'Tenant already locked' })
   @Patch(':id/lock')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
   @HttpCode(HttpStatus.OK)
@@ -88,6 +124,14 @@ export class TenantController extends BaseController {
     return this.success(tenant, 'Tenant locked successfully');
   }
 
+  @ApiOperation({ summary: 'Unlock tenant (restore access)' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Tenant unlocked successfully',
+  })
+  @SwaggerResponse({ status: 404, description: 'Tenant not found' })
+  @SwaggerResponse({ status: 400, description: 'Tenant is not locked' })
   @Patch(':id/unlock')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
   @HttpCode(HttpStatus.OK)
@@ -99,6 +143,13 @@ export class TenantController extends BaseController {
     return this.success(tenant, 'Tenant unlocked successfully');
   }
 
+  @ApiOperation({ summary: 'Soft delete tenant' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Tenant deleted successfully',
+  })
+  @SwaggerResponse({ status: 404, description: 'Tenant not found' })
   @Delete(':id')
   @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)

@@ -12,6 +12,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as SwaggerResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { BaseController } from '../../base-controller';
 import { PosDeviceService } from '../../../service/modules/pos-devices/pos-device.service';
 import { CreatePosDeviceDto } from '../../../dto/pos-device/create-pos-device.dto';
@@ -25,6 +33,8 @@ import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { User } from '../../../models/user.model';
 import { UserRole } from '../../../types/enums/user-role.enum';
 
+@ApiTags('POS Devices')
+@ApiBearerAuth()
 @Controller('pos-devices')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PosDeviceController extends BaseController {
@@ -32,6 +42,10 @@ export class PosDeviceController extends BaseController {
     super();
   }
 
+  @ApiOperation({ summary: 'Get list POS devices dengan pagination dan filter' })
+  @SwaggerResponse({ status: 200, description: 'POS devices retrieved successfully' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get()
   @Roles(
     UserRole.SUPER_ADMIN,
@@ -45,6 +59,12 @@ export class PosDeviceController extends BaseController {
     return this.paginated(result, 'POS devices retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Get detail POS device by ID' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({ status: 200, description: 'POS device retrieved successfully' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
+  @SwaggerResponse({ status: 404, description: 'POS device not found' })
   @Get(':id')
   @Roles(
     UserRole.SUPER_ADMIN,
@@ -58,6 +78,13 @@ export class PosDeviceController extends BaseController {
     return this.success(device, 'POS device retrieved successfully');
   }
 
+  @ApiOperation({ summary: 'Daftarkan POS device baru' })
+  @ApiBody({ type: CreatePosDeviceDto })
+  @SwaggerResponse({ status: 201, description: 'POS device registered successfully' })
+  @SwaggerResponse({ status: 400, description: 'Bad request' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
+  @SwaggerResponse({ status: 409, description: 'Serial number already registered' })
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
   @HttpCode(HttpStatus.CREATED)
@@ -66,6 +93,14 @@ export class PosDeviceController extends BaseController {
     return this.success(device, 'POS device registered successfully');
   }
 
+  @ApiOperation({ summary: 'Update data POS device' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiBody({ type: UpdatePosDeviceDto })
+  @SwaggerResponse({ status: 200, description: 'POS device updated successfully' })
+  @SwaggerResponse({ status: 400, description: 'Bad request' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
+  @SwaggerResponse({ status: 404, description: 'POS device not found' })
   @Patch(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
   @HttpCode(HttpStatus.OK)
@@ -78,6 +113,13 @@ export class PosDeviceController extends BaseController {
     return this.success(device, 'POS device updated successfully');
   }
 
+  @ApiOperation({ summary: 'Kirim heartbeat dari POS device' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @ApiBody({ type: HeartbeatPosDeviceDto })
+  @SwaggerResponse({ status: 200, description: 'Heartbeat received' })
+  @SwaggerResponse({ status: 400, description: 'Bad request' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 404, description: 'POS device not found' })
   @Post(':id/heartbeat')
   @HttpCode(HttpStatus.OK)
   async heartbeat(
@@ -88,6 +130,12 @@ export class PosDeviceController extends BaseController {
     return this.success(device, 'Heartbeat received');
   }
 
+  @ApiOperation({ summary: 'Hapus POS device' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({ status: 200, description: 'POS device deleted successfully' })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
+  @SwaggerResponse({ status: 404, description: 'POS device not found' })
   @Delete(':id')
   @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
