@@ -40,6 +40,8 @@ import { RealtimeModule } from './routes/modules/realtime.module';
 import { PosDeviceModule } from './routes/modules/pos-device.module';
 import { NotificationModule } from './routes/modules/notification.module';
 import { QueuesModule } from './queues/queues.module';
+import { DashboardModule } from './routes/modules/dashboard.module';
+import { DashboardModule } from './routes/modules/dashboard.module';
 
 @Module({
   imports: [
@@ -117,6 +119,7 @@ import { QueuesModule } from './queues/queues.module';
     PosDeviceModule,
     NotificationModule,
     QueuesModule,
+    DashboardModule,
   ],
   providers: [
     // Global rate limiter — applies ThrottlerGuard to all routes.
