@@ -15,6 +15,7 @@ export const validationSchema = Joi.object({
     .valid('development', 'staging', 'production', 'test')
     .default('development'),
   PORT: Joi.number().integer().min(1).max(65535).default(3000),
+  HOST: Joi.string().default('localhost'),
 
   // Database — wajib tersedia
   DB_HOST: Joi.string().required(),

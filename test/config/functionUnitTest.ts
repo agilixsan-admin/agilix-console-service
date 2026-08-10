@@ -255,6 +255,9 @@ export function mockEventPublisherService() {
     publishInvoiceOverdue: jest.fn(),
     publishPaymentReceived: jest.fn(),
     publishInvoiceCancelled: jest.fn(),
+    publishDeviceRegistered: jest.fn(),
+    publishDeviceOnline: jest.fn(),
+    publishDeviceOffline: jest.fn(),
   };
 }
 
@@ -298,5 +301,43 @@ export function mockInvoiceRepository() {
     findByInvoiceNumber: jest.fn(),
     countByTenantAndStatus: jest.fn(),
     countByBillingPeriod: jest.fn(),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// PosDevice Builder
+// ---------------------------------------------------------------------------
+
+import { PosDevice } from '../../src/models/pos-device.model';
+import { DeviceStatus } from '../../src/types/enums/device-status.enum';
+import {
+  TEST_DEVICE_ID,
+  TEST_DEVICE_CODE,
+  TEST_DEVICE_NAME,
+} from './constants';
+
+export function buildPosDevice(overrides: Partial<PosDevice> = {}): PosDevice {
+  const device = new PosDevice();
+  device.id = TEST_DEVICE_ID;
+  device.tenantId = TEST_TENANT_ID;
+  device.deviceCode = TEST_DEVICE_CODE;
+  device.deviceName = TEST_DEVICE_NAME;
+  device.status = DeviceStatus.OFFLINE;
+  device.isLocked = false;
+  device.lastSeenAt = null;
+  device.createdAt = TEST_CREATED_AT;
+  device.updatedAt = TEST_UPDATED_AT;
+  return Object.assign(device, overrides);
+}
+
+export function mockPosDeviceRepository() {
+  return {
+    findById: jest.fn(),
+    findByDeviceCode: jest.fn(),
+    findAll: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    countByStatus: jest.fn(),
   };
 }
