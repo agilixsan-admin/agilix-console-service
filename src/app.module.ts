@@ -37,6 +37,7 @@ import { AuthModule } from './routes/modules/auth.module';
 import { AuditLogModule } from './routes/modules/audit-log.module';
 import { TenantModule } from './routes/modules/tenant.module';
 import { RealtimeModule } from './routes/modules/realtime.module';
+import { PosDeviceModule } from './routes/modules/pos-device.module';
 
 @Module({
   imports: [
@@ -111,6 +112,7 @@ import { RealtimeModule } from './routes/modules/realtime.module';
     TenantModule,
     RealtimeModule,
     InvoiceModule,
+    PosDeviceModule,
   ],
   providers: [
     // Global rate limiter — applies ThrottlerGuard to all routes.
