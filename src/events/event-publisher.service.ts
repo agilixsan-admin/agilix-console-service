@@ -118,4 +118,46 @@ export class EventPublisherService {
       data: payload,
     });
   }
+
+  // ---------------------------------------------------------------------------
+  // POS Device Events — EVENT_CATALOG.md
+  // ---------------------------------------------------------------------------
+
+  publishDeviceRegistered(payload: {
+    deviceId: string;
+    tenantId: string;
+  }): void {
+    this.realtimeService.publish({
+      event: 'device.registered',
+      version: 1,
+      timestamp: new Date().toISOString(),
+      data: payload,
+    });
+  }
+
+  publishDeviceOnline(payload: {
+    deviceId: string;
+    tenantId: string;
+    status: string;
+  }): void {
+    this.realtimeService.publish({
+      event: 'device.online',
+      version: 1,
+      timestamp: new Date().toISOString(),
+      data: payload,
+    });
+  }
+
+  publishDeviceOffline(payload: {
+    deviceId: string;
+    tenantId: string;
+    status: string;
+  }): void {
+    this.realtimeService.publish({
+      event: 'device.offline',
+      version: 1,
+      timestamp: new Date().toISOString(),
+      data: payload,
+    });
+  }
 }
