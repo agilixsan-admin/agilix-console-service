@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { BaseController } from '../../base-controller';
 import {
   AuthService,
@@ -28,19 +29,27 @@ export class AuthController extends BaseController {
     super();
   }
 
+  /**
+   * Login — rate limited to 10 requests per 60 seconds per IP.
+   * Lebih ketat dari global throttle untuk mencegah brute force attack.
+   * IMPLEMENTATION_ROADMAP.md Phase 10 § Security
+   */
   @Post('login')
+  @Throttle({ auth: { ttl: 60_000, limit: 10 } })
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() dto: LoginDto,
     @Req() req: Request & { ipAddress?: string; userAgent?: string },
-  ): Promise<LoginResponse> {
-    return this.authService.login(dto, req.ipAddress, req.userAgent);
+  ): Promise<ApiResponse<LoginResponse>> {
+    const result = await this.authService.login(dto, req.ipAddress, req.userAgent);
+    return this.success(result, 'Login successful');
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body() dto: RefreshTokenDto): Promise<RefreshResponse> {
-    return this.authService.refresh(dto);
+  async refresh(@Body() dto: RefreshTokenDto): Promise<ApiResponse<RefreshResponse>> {
+    const result = await this.authService.refresh(dto);
+    return this.success(result, 'Token refreshed successfully');
   }
 
   @Post('logout')
@@ -48,9 +57,10 @@ export class AuthController extends BaseController {
   @HttpCode(HttpStatus.OK)
   async logout(
     @CurrentUser() actor: User,
+    @Body() body: RefreshTokenDto,
     @Req() req: Request & { ipAddress?: string; userAgent?: string },
   ): Promise<ApiResponse<void>> {
-    await this.authService.logout(actor.id, req.ipAddress, req.userAgent);
+    await this.authService.logout(actor.id, req.ipAddress, req.userAgent, body.refreshToken);
     return this.noContent('Logged out successfully');
   }
 

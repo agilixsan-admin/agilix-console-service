@@ -32,7 +32,7 @@ export class TenantService {
       search: query.search,
       status: query.status,
       planType: query.planType,
-    } as FindAllTenantsOptions);
+    });
   }
 
   async findById(id: string): Promise<Tenant> {

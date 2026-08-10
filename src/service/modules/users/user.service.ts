@@ -32,7 +32,7 @@ export class UserService {
       search: query.search,
       role: query.role,
       isActive: query.isActive,
-    } as FindAllUsersOptions);
+    });
   }
 
   async findById(id: string): Promise<User> {

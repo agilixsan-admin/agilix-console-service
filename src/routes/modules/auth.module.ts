@@ -6,6 +6,7 @@ import { UserModule } from './user.module';
 import { AuditLogModule } from './audit-log.module';
 import { AuthService } from '../../service/modules/auth/auth.service';
 import { JwtStrategy } from '../../service/modules/auth/jwt.strategy';
+import { TokenBlacklistService } from '../../service/modules/auth/token-blacklist.service';
 import { AuthController } from '../../controllers/modules/auth/auth.controller';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
@@ -27,7 +28,7 @@ import { RolesGuard } from '../../guards/roles.guard';
     AuditLogModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, TokenBlacklistService],
   exports: [AuthService, JwtAuthGuard, RolesGuard, JwtModule],
 })
 export class AuthModule {}

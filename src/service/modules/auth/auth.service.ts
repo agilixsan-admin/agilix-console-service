@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRepository } from '../../../repositories/modules/user.repository';
 import { AuditLogService } from '../audit-logs/audit-log.service';
+import { TokenBlacklistService } from './token-blacklist.service';
 import { LoginDto } from '../../../dto/auth/login.dto';
 import { RefreshTokenDto } from '../../../dto/auth/refresh-token.dto';
 import { User } from '../../../models/user.model';
@@ -28,6 +29,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly auditLogService: AuditLogService,
+    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {}
 
   async login(
@@ -63,8 +65,13 @@ export class AuthService {
     };
 
     const expiresIn = this.configService.get<number>('jwt.expiresIn') ?? 1800;
+
     const accessToken = this.jwtService.sign(payload);
+
+    // Refresh token menggunakan secret terpisah (jwt.refreshSecret)
+    // untuk mencegah token substitution attack.
     const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('jwt.refreshSecret'),
       expiresIn: this.configService.get<string>('jwt.refreshExpiresIn') ?? '7d',
     });
 
@@ -92,11 +99,19 @@ export class AuthService {
   }
 
   async refresh(dto: RefreshTokenDto): Promise<RefreshResponse> {
+    // Cek blacklist terlebih dahulu sebelum verifikasi signature
+    const isRevoked = await this.tokenBlacklistService.isBlacklisted(
+      dto.refreshToken,
+    );
+    if (isRevoked) {
+      throw new UnauthorizedException('Refresh token has been revoked');
+    }
+
     let payload: JwtPayload;
 
     try {
       payload = this.jwtService.verify<JwtPayload>(dto.refreshToken, {
-        secret: this.configService.get<string>('jwt.secret'),
+        secret: this.configService.get<string>('jwt.refreshSecret'),
       });
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
@@ -123,7 +138,13 @@ export class AuthService {
     actorId: string,
     ipAddress?: string,
     userAgent?: string,
+    refreshToken?: string,
   ): Promise<void> {
+    // Blacklist refresh token di Redis agar tidak dapat digunakan kembali
+    if (refreshToken) {
+      await this.tokenBlacklistService.blacklist(refreshToken);
+    }
+
     await this.auditLogService.log({
       actorId,
       action: AuditAction.AUTH_LOGOUT,

@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { GLOBAL_PREFIX } from './configs/route';
 
@@ -13,12 +14,17 @@ import { GLOBAL_PREFIX } from './configs/route';
  *   - setGlobalPrefix    — semua endpoint berada di bawah /api/v1
  *   - ValidationPipe     — aktifkan validasi DTO secara global
  *   - enableCors         — izinkan cross-origin request (dikonfigurasi dari env)
- *
- * Security hardening (Helmet, Rate Limiter) akan ditambahkan di Phase 10
- * setelah seluruh domain module selesai diimplementasi.
+ *   - helmet             — HTTP security headers
  */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // ---------------------------------------------------------------------------
+  // Helmet — HTTP Security Headers
+  // Dipasang sebelum route agar berlaku untuk semua request.
+  // IMPLEMENTATION_ROADMAP.md Phase 10 § Security
+  // ---------------------------------------------------------------------------
+  app.use(helmet());
 
   // ---------------------------------------------------------------------------
   // Global API Prefix
@@ -29,11 +35,6 @@ async function bootstrap() {
   // ---------------------------------------------------------------------------
   // Global Validation Pipe
   // AGENTS.md § DTO Rules: validasi wajib di semua endpoint
-  //
-  // whitelist: true          — strip properti yang tidak ada di DTO
-  // forbidNonWhitelisted: true — throw 400 jika ada properti tidak dikenal
-  // transform: true          — otomatis transform query string ke tipe yang benar
-  //                            (misal: string "1" → number 1 untuk @IsInt())
   // ---------------------------------------------------------------------------
   app.useGlobalPipes(
     new ValidationPipe({
@@ -48,8 +49,6 @@ async function bootstrap() {
 
   // ---------------------------------------------------------------------------
   // CORS
-  // Origin dikonfigurasi dari CORS_ORIGIN env variable.
-  // Production wajib set CORS_ORIGIN — default false (block all) di non-dev.
   // ---------------------------------------------------------------------------
   const isDevEnv = (process.env.NODE_ENV ?? 'development') === 'development';
   const corsOrigin = process.env.CORS_ORIGIN

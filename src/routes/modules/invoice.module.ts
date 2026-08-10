@@ -8,7 +8,11 @@ import { AuditLogModule } from './audit-log.module';
 import { RealtimeModule } from './realtime.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Invoice]), AuditLogModule, RealtimeModule],
+  imports: [
+    TypeOrmModule.forFeature([Invoice]),
+    AuditLogModule,
+    RealtimeModule,
+  ],
   controllers: [InvoiceController],
   providers: [InvoiceRepository, InvoiceService],
   exports: [InvoiceService],
