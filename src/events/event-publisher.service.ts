@@ -160,4 +160,28 @@ export class EventPublisherService {
       data: payload,
     });
   }
+
+  publishNotificationSent(payload: {
+    notificationId: string;
+    channel: string;
+  }): void {
+    this.realtimeService.publish({
+      event: 'notification.sent',
+      version: 1,
+      timestamp: new Date().toISOString(),
+      data: payload,
+    });
+  }
+
+  publishNotificationFailed(payload: {
+    notificationId: string;
+    reason: string;
+  }): void {
+    this.realtimeService.publish({
+      event: 'notification.failed',
+      version: 1,
+      timestamp: new Date().toISOString(),
+      data: payload,
+    });
+  }
 }
