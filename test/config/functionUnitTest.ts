@@ -378,3 +378,23 @@ export function mockNotificationRepository() {
     update: jest.fn(),
   };
 }
+
+export function mockDashboardTenantRepository() {
+  return {
+    countByStatus: jest.fn(),
+    getMonthlyGrowth: jest.fn(),
+  };
+}
+
+export function mockDashboardInvoiceRepository() {
+  return {
+    countOverdue: jest.fn(),
+    getRevenueByPeriod: jest.fn(),
+  };
+}
+
+export function mockDashboardPosDeviceRepository() {
+  return {
+    countByStatus: jest.fn(),
+  };
+}
