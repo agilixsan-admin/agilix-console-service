@@ -11,6 +11,7 @@ import {
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { TenantStatus } from '../../types/enums/tenant-status.enum';
 import { PlanType } from '../../types/enums/plan-type.enum';
+import { trim } from '../../utils/transform.util';
 
 export class ListTenantsQueryDto {
   @ApiPropertyOptional({
@@ -47,6 +48,7 @@ export class ListTenantsQueryDto {
   @IsOptional()
   @IsString()
   @MaxLength(255)
+  @Transform(({ value }) => trim(value))
   search?: string;
 
   @ApiPropertyOptional({

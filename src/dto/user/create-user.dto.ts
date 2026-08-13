@@ -6,25 +6,12 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '../../types/enums/user-role.enum';
+import { trim, trimLower } from '../../utils/transform.util';
 
-/**
- * CreateUserDto
- *
- * Validates the request body for POST /users.
- * Source of truth: API_SPEC.md → User Management → Create User
- * Validation: AGENTS.md § DTO Rules (class-validator mandatory)
- *
- * All fields are required — partial creation is not allowed.
- * Password is accepted as plaintext here; UserService is responsible
- * for hashing with bcrypt before persisting.
- */
 export class CreateUserDto {
-  /**
-   * Full display name of the administrator.
-   * Must be a non-empty string, max 255 characters.
-   */
   @ApiProperty({
     description: 'Full name of the user',
     example: 'John Doe',
@@ -33,12 +20,9 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'fullName is required' })
   @IsString({ message: 'fullName must be a string' })
   @MaxLength(255, { message: 'fullName must not exceed 255 characters' })
+  @Transform(({ value }) => trim(value))
   fullName: string;
 
-  /**
-   * Unique email address used for login.
-   * Must be a valid email format.
-   */
   @ApiProperty({
     description: 'Unique email address for login',
     example: 'john@example.com',
@@ -47,13 +31,9 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'email is required' })
   @IsEmail({}, { message: 'email must be a valid email address' })
   @MaxLength(255, { message: 'email must not exceed 255 characters' })
+  @Transform(({ value }) => trimLower(value))
   email: string;
 
-  /**
-   * Plaintext password submitted by the requester.
-   * UserService will hash this with bcrypt before persisting.
-   * Min 8 characters enforced here; strength policy can be extended.
-   */
   @ApiProperty({
     description: 'Password (minimum 8 characters)',
     example: 'Password123!',
@@ -64,13 +44,9 @@ export class CreateUserDto {
   @IsString({ message: 'password must be a string' })
   @MinLength(8, { message: 'password must be at least 8 characters' })
   @MaxLength(128, { message: 'password must not exceed 128 characters' })
+  @Transform(({ value }) => trim(value))
   password: string;
 
-  /**
-   * RBAC role to assign to this user.
-   * Must be one of the valid UserRole enum values.
-   * Source: DOMAIN_MODEL.md → Enums → UserRole
-   */
   @ApiProperty({
     description: 'User role',
     example: UserRole.VIEWER,

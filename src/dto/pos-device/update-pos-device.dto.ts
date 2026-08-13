@@ -1,6 +1,8 @@
 import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { DeviceStatus } from '../../types/enums/device-status.enum';
+import { trim } from '../../utils/transform.util';
 
 export class UpdatePosDeviceDto {
   @ApiPropertyOptional({
@@ -11,6 +13,7 @@ export class UpdatePosDeviceDto {
   @IsString()
   @IsOptional()
   @MaxLength(255)
+  @Transform(({ value }) => trim(value))
   deviceName?: string;
 
   @ApiPropertyOptional({

@@ -1,5 +1,7 @@
 import { IsNotEmpty, IsString, IsUUID, MaxLength } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { trim } from '../../utils/transform.util';
 
 export class CreatePosDeviceDto {
   @ApiProperty({
@@ -19,6 +21,7 @@ export class CreatePosDeviceDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(50)
+  @Transform(({ value }) => trim(value))
   deviceCode: string;
 
   @ApiProperty({
@@ -29,5 +32,6 @@ export class CreatePosDeviceDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
+  @Transform(({ value }) => trim(value))
   deviceName: string;
 }

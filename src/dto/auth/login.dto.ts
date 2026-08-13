@@ -5,7 +5,9 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { trim, trimLower } from '../../utils/transform.util';
 
 export class LoginDto {
   @ApiProperty({
@@ -15,6 +17,7 @@ export class LoginDto {
   @IsNotEmpty()
   @IsEmail({}, { message: 'email must be a valid email address' })
   @MaxLength(255)
+  @Transform(({ value }) => trimLower(value))
   email: string;
 
   @ApiProperty({
@@ -26,5 +29,6 @@ export class LoginDto {
   @IsString()
   @MinLength(8)
   @MaxLength(128)
+  @Transform(({ value }) => trim(value))
   password: string;
 }

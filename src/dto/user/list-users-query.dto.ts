@@ -11,23 +11,9 @@ import {
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../types/enums/user-role.enum';
+import { trim } from '../../utils/transform.util';
 
-/**
- * ListUsersQueryDto
- *
- * Validates query parameters for GET /users.
- * Source of truth: API_SPEC.md → User Management → List Users
- * Pagination rules: DATABASE_RULES.md § Pagination
- *
- * All fields are optional — defaults applied in UserRepository.findAll().
- * HTTP query strings arrive as strings; @Transform converts them to the
- * correct primitive types before class-validator runs.
- */
 export class ListUsersQueryDto {
-  /**
-   * Page number (1-based).
-   * Default: 1 (applied in repository)
-   */
   @ApiPropertyOptional({
     description: 'Page number (1-based)',
     example: 1,
@@ -40,10 +26,6 @@ export class ListUsersQueryDto {
   @Min(1, { message: 'page must be at least 1' })
   page?: number = 1;
 
-  /**
-   * Number of records per page.
-   * Default: 10. Maximum: 100 (DATABASE_RULES.md § Pagination)
-   */
   @ApiPropertyOptional({
     description: 'Records per page',
     example: 10,
@@ -58,10 +40,6 @@ export class ListUsersQueryDto {
   @Max(100, { message: 'limit must not exceed 100' })
   limit?: number = 10;
 
-  /**
-   * Full-text search string.
-   * Matched against fullName and email (case-insensitive ILIKE in repository).
-   */
   @ApiPropertyOptional({
     description: 'Search by name or email',
     example: 'john',
@@ -70,11 +48,9 @@ export class ListUsersQueryDto {
   @IsOptional()
   @IsString({ message: 'search must be a string' })
   @MaxLength(255, { message: 'search must not exceed 255 characters' })
+  @Transform(({ value }) => trim(value))
   search?: string;
 
-  /**
-   * Filter by RBAC role.
-   */
   @ApiPropertyOptional({
     description: 'Filter by role',
     example: UserRole.VIEWER,
@@ -86,10 +62,6 @@ export class ListUsersQueryDto {
   })
   role?: UserRole;
 
-  /**
-   * Filter by active status.
-   * Accepts 'true' or 'false' as query string values.
-   */
   @ApiPropertyOptional({
     description: 'Filter by active status',
     example: true,

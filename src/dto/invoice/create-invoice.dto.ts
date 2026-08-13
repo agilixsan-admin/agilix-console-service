@@ -9,7 +9,9 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { trim, trimStripHtml } from '../../utils/transform.util';
 
 export class CreateInvoiceDto {
   @ApiProperty({
@@ -41,6 +43,7 @@ export class CreateInvoiceDto {
   @Matches(/^\d{4}-(0[1-9]|1[0-2])$/, {
     message: 'billingPeriod must be in format YYYY-MM',
   })
+  @Transform(({ value }) => trim(value))
   billingPeriod: string;
 
   @ApiProperty({
@@ -60,5 +63,6 @@ export class CreateInvoiceDto {
   @IsOptional()
   @IsString()
   @MaxLength(1000)
+  @Transform(({ value }) => trimStripHtml(value))
   notes?: string;
 }

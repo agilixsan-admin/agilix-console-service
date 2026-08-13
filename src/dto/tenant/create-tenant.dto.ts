@@ -6,11 +6,14 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   Min,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PlanType } from '../../types/enums/plan-type.enum';
+import { trim, trimLower, trimStripHtml } from '../../utils/transform.util';
 
 export class CreateTenantDto {
   @ApiProperty({
@@ -21,6 +24,7 @@ export class CreateTenantDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(255)
+  @Transform(({ value }) => trim(value))
   businessName: string;
 
   @ApiProperty({
@@ -31,6 +35,7 @@ export class CreateTenantDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(255)
+  @Transform(({ value }) => trim(value))
   ownerName: string;
 
   @ApiProperty({
@@ -41,6 +46,7 @@ export class CreateTenantDto {
   @IsNotEmpty()
   @IsEmail()
   @MaxLength(255)
+  @Transform(({ value }) => trimLower(value))
   ownerEmail: string;
 
   @ApiPropertyOptional({
@@ -51,6 +57,10 @@ export class CreateTenantDto {
   @IsOptional()
   @IsString()
   @MaxLength(20)
+  @Matches(/^\+?[0-9\s\-()]{7,20}$/, {
+    message: 'ownerPhone format is invalid',
+  })
+  @Transform(({ value }) => trim(value))
   ownerPhone?: string;
 
   @ApiProperty({
@@ -84,8 +94,11 @@ export class CreateTenantDto {
   @ApiPropertyOptional({
     description: 'Additional notes',
     example: 'Premium customer',
+    maxLength: 500,
   })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
+  @Transform(({ value }) => trimStripHtml(value))
   notes?: string;
 }
