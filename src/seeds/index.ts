@@ -1,5 +1,6 @@
 import { AppDataSource } from '../configs/db';
 import { seedSuperAdmin } from './super-admin.seed';
+import { seedEmailTemplates } from './email-template.seed';
 
 async function runSeeds() {
   const dataSource = AppDataSource;
@@ -9,6 +10,7 @@ async function runSeeds() {
     console.log('✓ Database connection established');
 
     await seedSuperAdmin(dataSource);
+    await seedEmailTemplates(dataSource);
 
     console.log('✓ All seeds completed successfully');
   } catch (error) {

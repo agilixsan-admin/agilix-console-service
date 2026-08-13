@@ -1,20 +1,20 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
-import { Job } from 'bullmq';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Job, Queue } from 'bullmq';
 import {
   INVOICE_REMINDER_QUEUE,
   InvoiceReminderJobPayload,
 } from '../jobs/invoice-reminder.job';
-import { NotificationService } from '../../service/modules/notifications/notification.service';
-import { NotificationStatus } from '../../types/enums/notification-status.enum';
-import { NotificationType } from '../../types/enums/notification-type.enum';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
 import {
   EMAIL_NOTIFICATION_QUEUE,
   EMAIL_NOTIFICATION_JOB,
   EmailNotificationJobPayload,
 } from '../jobs/email-notification.job';
+import { NotificationService } from '../../service/modules/notifications/notification.service';
+import { NotificationStatus } from '../../types/enums/notification-status.enum';
+import { NotificationType } from '../../types/enums/notification-type.enum';
+import { EmailTemplateRepository } from '../../repositories/modules/email-template.repository';
 
 @Processor(INVOICE_REMINDER_QUEUE)
 export class InvoiceReminderProcessor extends WorkerHost {
@@ -22,6 +22,7 @@ export class InvoiceReminderProcessor extends WorkerHost {
 
   constructor(
     private readonly notificationService: NotificationService,
+    private readonly emailTemplateRepository: EmailTemplateRepository,
     @InjectQueue(EMAIL_NOTIFICATION_QUEUE)
     private readonly emailQueue: Queue,
   ) {
@@ -40,15 +41,24 @@ export class InvoiceReminderProcessor extends WorkerHost {
 
     this.logger.log(`Processing reminder for invoice ${invoiceId}`);
 
-    const subject = `Pengingat: Tagihan ${billingPeriod} jatuh tempo ${dueDate}`;
-    const content = `Tagihan Anda sebesar Rp ${amount.toLocaleString('id-ID')} akan jatuh tempo pada ${dueDate}. Segera lakukan pembayaran.`;
+    const { subject, html } = await this.emailTemplateRepository.render(
+      'invoice-reminder',
+      {
+        ownerName: recipientEmail,
+        businessName: tenantId,
+        invoiceNumber: invoiceId,
+        billingPeriod,
+        dueDate,
+        amount: amount.toLocaleString('id-ID'),
+      },
+    );
 
     const notification = await this.notificationService.create({
       tenantId,
       type: NotificationType.REMINDER_EMAIL,
       recipient: recipientEmail,
       subject,
-      content,
+      content: html,
       status: NotificationStatus.PENDING,
     });
 
@@ -57,7 +67,7 @@ export class InvoiceReminderProcessor extends WorkerHost {
       tenantId,
       recipient: recipientEmail,
       subject,
-      content,
+      content: html,
     };
 
     await this.emailQueue.add(EMAIL_NOTIFICATION_JOB, emailPayload, {
