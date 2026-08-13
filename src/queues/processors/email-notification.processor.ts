@@ -41,10 +41,14 @@ export class EmailNotificationProcessor extends WorkerHost {
 
     try {
       await this.transporter.sendMail({
-        from: this.configService.get<string>('smtp.from'),
+        from: `"Agilix" <${this.configService.get<string>('smtp.from')}>`,
         to: recipient,
         subject,
         html: content,
+        headers: {
+          'X-Mailer': 'Agilix Mailer',
+          'List-Unsubscribe': `<mailto:${this.configService.get<string>('smtp.from')}?subject=unsubscribe>`,
+        },
         attachments: job.data.attachments?.map((a) => ({
           filename: a.filename,
           content: Buffer.from(a.content, 'base64'),
