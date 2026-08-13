@@ -4,10 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Invoice } from '../../../models/invoice.model';
-import {
-  FindAllInvoicesOptions,
-  InvoiceRepository,
-} from '../../../repositories/modules/invoice.repository';
+import { InvoiceRepository } from '../../../repositories/modules/invoice.repository';
 import { PaginatedResult } from '../../../types/response.types';
 import { CreateInvoiceDto } from '../../../dto/invoice/create-invoice.dto';
 import { PayInvoiceDto } from '../../../dto/invoice/pay-invoice.dto';

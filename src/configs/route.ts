@@ -1,5 +1,5 @@
-export const GLOBAL_PREFIX = 'api/v1';
-export const API_VERSION = 'v1';
+export const GLOBAL_PREFIX = 'api/v1'; // nosec
+export const API_VERSION = 'v1'; // nosec
 export const ROUTES = {
   AUTH: 'auth',
   USERS: 'users',

@@ -42,8 +42,13 @@ export class PosDeviceController extends BaseController {
     super();
   }
 
-  @ApiOperation({ summary: 'Get list POS devices dengan pagination dan filter' })
-  @SwaggerResponse({ status: 200, description: 'POS devices retrieved successfully' })
+  @ApiOperation({
+    summary: 'Get list POS devices dengan pagination dan filter',
+  })
+  @SwaggerResponse({
+    status: 200,
+    description: 'POS devices retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get()
@@ -61,7 +66,10 @@ export class PosDeviceController extends BaseController {
 
   @ApiOperation({ summary: 'Get detail POS device by ID' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @SwaggerResponse({ status: 200, description: 'POS device retrieved successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'POS device retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 404, description: 'POS device not found' })
@@ -80,11 +88,17 @@ export class PosDeviceController extends BaseController {
 
   @ApiOperation({ summary: 'Daftarkan POS device baru' })
   @ApiBody({ type: CreatePosDeviceDto })
-  @SwaggerResponse({ status: 201, description: 'POS device registered successfully' })
+  @SwaggerResponse({
+    status: 201,
+    description: 'POS device registered successfully',
+  })
   @SwaggerResponse({ status: 400, description: 'Bad request' })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
-  @SwaggerResponse({ status: 409, description: 'Serial number already registered' })
+  @SwaggerResponse({
+    status: 409,
+    description: 'Serial number already registered',
+  })
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
   @HttpCode(HttpStatus.CREATED)
@@ -96,7 +110,10 @@ export class PosDeviceController extends BaseController {
   @ApiOperation({ summary: 'Update data POS device' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   @ApiBody({ type: UpdatePosDeviceDto })
-  @SwaggerResponse({ status: 200, description: 'POS device updated successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'POS device updated successfully',
+  })
   @SwaggerResponse({ status: 400, description: 'Bad request' })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
@@ -132,7 +149,10 @@ export class PosDeviceController extends BaseController {
 
   @ApiOperation({ summary: 'Hapus POS device' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @SwaggerResponse({ status: 200, description: 'POS device deleted successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'POS device deleted successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 404, description: 'POS device not found' })

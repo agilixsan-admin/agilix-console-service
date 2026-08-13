@@ -26,7 +26,9 @@ import { UserRole } from '../../../types/enums/user-role.enum';
 export class RealtimeController {
   constructor(private readonly realtimeService: RealtimeService) {}
 
-  @ApiOperation({ summary: 'Subscribe ke Server-Sent Events (SSE) stream realtime' })
+  @ApiOperation({
+    summary: 'Subscribe ke Server-Sent Events (SSE) stream realtime',
+  })
   @SwaggerResponse({ status: 200, description: 'SSE stream connected' })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })

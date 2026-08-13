@@ -6,8 +6,10 @@ import { UserRole } from '../types/enums/user-role.enum';
 export async function seedSuperAdmin(dataSource: DataSource): Promise<void> {
   const userRepository = dataSource.getRepository(User);
 
+  const adminEmail = process.env.SEED_SUPER_ADMIN_EMAIL ?? 'admin@agilix.com';
+
   const existingAdmin = await userRepository.findOne({
-    where: { email: 'admin@agilix.com' },
+    where: { email: adminEmail },
   });
 
   if (existingAdmin) {
@@ -15,11 +17,18 @@ export async function seedSuperAdmin(dataSource: DataSource): Promise<void> {
     return;
   }
 
-  const hashedPassword = await bcrypt.hash('Admin123!', 10);
+  const seedPassword = process.env.SEED_SUPER_ADMIN_PASSWORD;
+  if (!seedPassword) {
+    throw new Error(
+      'SEED_SUPER_ADMIN_PASSWORD environment variable is not set',
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(seedPassword, 10);
 
   const superAdmin = userRepository.create({
     fullName: 'Super Administrator',
-    email: 'admin@agilix.com',
+    email: adminEmail,
     passwordHash: hashedPassword,
     role: UserRole.SUPER_ADMIN,
   });
@@ -27,7 +36,8 @@ export async function seedSuperAdmin(dataSource: DataSource): Promise<void> {
   await userRepository.save(superAdmin);
 
   console.log('✓ SUPER_ADMIN user created successfully');
-  console.log('  Email: admin@agilix.com');
-  console.log('  Password: Admin123!');
-  console.log('  ⚠️  CHANGE PASSWORD IMMEDIATELY AFTER FIRST LOGIN');
+  console.log(`  Email: ${adminEmail}`);
+  console.log(
+    '  ⚠️  Password was read from SEED_SUPER_ADMIN_PASSWORD env variable',
+  );
 }

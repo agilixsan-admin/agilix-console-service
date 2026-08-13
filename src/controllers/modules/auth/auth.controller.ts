@@ -107,7 +107,7 @@ export class AuthController extends BaseController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async getProfile(@CurrentUser() user: User): Promise<ApiResponse<User>> {
+  getProfile(@CurrentUser() user: User): ApiResponse<User> {
     return this.success(user, 'Profile retrieved successfully');
   }
 }

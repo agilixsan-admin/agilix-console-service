@@ -41,7 +41,10 @@ export class InvoiceController extends BaseController {
   }
 
   @ApiOperation({ summary: 'Get list invoices dengan pagination dan filter' })
-  @SwaggerResponse({ status: 200, description: 'Invoices retrieved successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Invoices retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get()
@@ -54,7 +57,10 @@ export class InvoiceController extends BaseController {
 
   @ApiOperation({ summary: 'Get detail invoice by ID' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @SwaggerResponse({ status: 200, description: 'Invoice retrieved successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Invoice retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 404, description: 'Invoice not found' })
@@ -84,8 +90,14 @@ export class InvoiceController extends BaseController {
   @ApiOperation({ summary: 'Tandai invoice sebagai sudah dibayar' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
   @ApiBody({ type: PayInvoiceDto })
-  @SwaggerResponse({ status: 200, description: 'Invoice marked as paid successfully' })
-  @SwaggerResponse({ status: 400, description: 'Invoice sudah dibayar atau dibatalkan' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Invoice marked as paid successfully',
+  })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Invoice sudah dibayar atau dibatalkan',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 404, description: 'Invoice not found' })
@@ -103,8 +115,14 @@ export class InvoiceController extends BaseController {
 
   @ApiOperation({ summary: 'Batalkan invoice' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @SwaggerResponse({ status: 200, description: 'Invoice cancelled successfully' })
-  @SwaggerResponse({ status: 400, description: 'Invoice tidak bisa dibatalkan' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Invoice cancelled successfully',
+  })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Invoice tidak bisa dibatalkan',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 404, description: 'Invoice not found' })

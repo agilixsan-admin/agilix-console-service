@@ -276,7 +276,6 @@ import {
   TEST_INVOICE_AMOUNT,
   TEST_BILLING_PERIOD,
   TEST_DUE_DATE,
-  TEST_PAID_AT,
 } from './constants';
 
 export function buildInvoice(overrides: Partial<Invoice> = {}): Invoice {

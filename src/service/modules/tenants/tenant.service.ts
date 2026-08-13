@@ -4,10 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Tenant } from '../../../models/tenant.model';
-import {
-  FindAllTenantsOptions,
-  TenantRepository,
-} from '../../../repositories/modules/tenant.repository';
+import { TenantRepository } from '../../../repositories/modules/tenant.repository';
 import { PaginatedResult } from '../../../types/response.types';
 import { CreateTenantDto } from '../../../dto/tenant/create-tenant.dto';
 import { UpdateTenantDto } from '../../../dto/tenant/update-tenant.dto';

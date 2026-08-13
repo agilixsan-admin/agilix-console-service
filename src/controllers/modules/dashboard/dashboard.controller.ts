@@ -37,8 +37,13 @@ export class DashboardController extends BaseController {
     super();
   }
 
-  @ApiOperation({ summary: 'Get ringkasan data dashboard (tenant, invoice, device)' })
-  @SwaggerResponse({ status: 200, description: 'Dashboard summary retrieved successfully' })
+  @ApiOperation({
+    summary: 'Get ringkasan data dashboard (tenant, invoice, device)',
+  })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Dashboard summary retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get('summary')
@@ -55,7 +60,10 @@ export class DashboardController extends BaseController {
   }
 
   @ApiOperation({ summary: 'Get data pertumbuhan tenant per bulan' })
-  @SwaggerResponse({ status: 200, description: 'Tenant growth retrieved successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Tenant growth retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get('tenant-growth')
@@ -67,7 +75,10 @@ export class DashboardController extends BaseController {
   }
 
   @ApiOperation({ summary: 'Get ringkasan pendapatan per bulan' })
-  @SwaggerResponse({ status: 200, description: 'Revenue summary retrieved successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Revenue summary retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get('revenue-summary')

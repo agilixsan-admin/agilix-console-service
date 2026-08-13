@@ -34,7 +34,10 @@ export class AuditLogController extends BaseController {
   }
 
   @ApiOperation({ summary: 'Get list audit logs dengan pagination dan filter' })
-  @SwaggerResponse({ status: 200, description: 'Audit logs retrieved successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Audit logs retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get()
@@ -46,7 +49,10 @@ export class AuditLogController extends BaseController {
 
   @ApiOperation({ summary: 'Get detail audit log by ID' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @SwaggerResponse({ status: 200, description: 'Audit log retrieved successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Audit log retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 404, description: 'Audit log not found' })

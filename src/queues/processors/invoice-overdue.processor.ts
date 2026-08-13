@@ -20,11 +20,13 @@ export class InvoiceOverdueProcessor extends WorkerHost {
 
     this.logger.log(`Processing overdue check for invoice ${invoiceId}`);
 
-    this.eventPublisher.publishInvoiceOverdue({
-      invoiceId,
-      tenantId,
-      dueDate,
-    });
+    await Promise.resolve(
+      this.eventPublisher.publishInvoiceOverdue({
+        invoiceId,
+        tenantId,
+        dueDate,
+      }),
+    );
 
     this.logger.log(`invoice.overdue event published for invoice ${invoiceId}`);
   }

@@ -6,10 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from '../../../models/user.model';
-import {
-  FindAllUsersOptions,
-  UserRepository,
-} from '../../../repositories/modules/user.repository';
+import { UserRepository } from '../../../repositories/modules/user.repository';
 import { PaginatedResult } from '../../../types/response.types';
 import { CreateUserDto } from '../../../dto/user/create-user.dto';
 import { UpdateUserDto } from '../../../dto/user/update-user.dto';

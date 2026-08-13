@@ -18,7 +18,6 @@ import {
   ApiResponse as SwaggerResponse,
   ApiBearerAuth,
   ApiParam,
-  ApiQuery,
   ApiBody,
 } from '@nestjs/swagger';
 import { BaseController } from '../../base-controller';

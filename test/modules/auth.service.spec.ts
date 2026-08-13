@@ -40,7 +40,6 @@ describe('AuthService', () => {
   let service: AuthService;
   let userRepository: ReturnType<typeof mockUserRepository>;
   let jwtService: ReturnType<typeof mockJwtService>;
-  let configService: ReturnType<typeof mockConfigService>;
   let auditLogService: ReturnType<typeof mockAuditLogService>;
   let tokenBlacklist: ReturnType<typeof mockTokenBlacklistService>;
 
@@ -62,7 +61,6 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService);
     userRepository = module.get(UserRepository);
     jwtService = module.get(JwtService);
-    configService = module.get(ConfigService);
     auditLogService = module.get(AuditLogService);
     tokenBlacklist = module.get(TokenBlacklistService);
   });
@@ -77,7 +75,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('harus mengembalikan accessToken, refreshToken, dan data user saat login berhasil', async () => {
-      const hash = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
+      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
       const user = buildUserWithPassword({
         email: SUPER_ADMIN_EMAIL,
         role: UserRole.SUPER_ADMIN,
@@ -102,12 +100,13 @@ describe('AuthService', () => {
       expect(result.user.role).toBe(UserRole.SUPER_ADMIN);
       expect(userRepository.update).toHaveBeenCalledWith(
         user.id,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expect.objectContaining({ lastLoginAt: expect.any(Date) }),
       );
     });
 
     it('harus membuat refresh token dengan refreshSecret yang berbeda', async () => {
-      const hash = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
+      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
       const user = buildUserWithPassword({ passwordHash: hash });
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
       userRepository.update.mockResolvedValue(user);
@@ -123,12 +122,13 @@ describe('AuthService', () => {
       expect(jwtService.sign).toHaveBeenNthCalledWith(
         2,
         expect.anything(),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expect.objectContaining({ secret: expect.any(String) }),
       );
     });
 
     it('harus memanggil AuditLogService.log dengan AUTH_LOGIN setelah login berhasil', async () => {
-      const hash = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
+      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
       const user = buildUserWithPassword({ passwordHash: hash });
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
       userRepository.update.mockResolvedValue(user);
@@ -173,7 +173,7 @@ describe('AuthService', () => {
     });
 
     it('harus throw UnauthorizedException jika user tidak aktif', async () => {
-      const hash = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
+      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
       const user = buildUserWithPassword({
         isActive: false,
         passwordHash: hash,
@@ -191,7 +191,7 @@ describe('AuthService', () => {
     });
 
     it('harus memperbarui lastLoginAt setelah login berhasil', async () => {
-      const hash = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
+      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
       const user = buildUserWithPassword({ passwordHash: hash });
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
       userRepository.update.mockResolvedValue(user);
@@ -205,6 +205,7 @@ describe('AuthService', () => {
 
       expect(userRepository.update).toHaveBeenCalledWith(
         user.id,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expect.objectContaining({ lastLoginAt: expect.any(Date) }),
       );
     });
@@ -337,6 +338,7 @@ describe('AuthService', () => {
 
       expect(jwtService.verify).toHaveBeenCalledWith(
         TEST_REFRESH_TOKEN,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expect.objectContaining({ secret: expect.any(String) }),
       );
     });

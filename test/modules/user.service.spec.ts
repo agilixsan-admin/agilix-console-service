@@ -9,8 +9,8 @@ import { CreateUserDto } from '../../src/dto/user/create-user.dto';
 import { UpdateUserDto } from '../../src/dto/user/update-user.dto';
 import { ListUsersQueryDto } from '../../src/dto/user/list-users-query.dto';
 import { UserRole } from '../../src/types/enums/user-role.enum';
+import { User } from '../../src/models/user.model';
 import {
-  FINANCE_ADMIN_EMAIL,
   SUPPORT_ADMIN_EMAIL,
   TEST_PASSWORD_PLAIN,
   TEST_USER_ID,
@@ -163,14 +163,16 @@ describe('UserService', () => {
 
       await service.create(createDto, TEST_USER_ID_2);
 
-      const createCall = repository.create.mock.calls[0][0];
+      const [createArg] = repository.create.mock.calls[0] as [
+        Pick<User, 'passwordHash'>,
+      ];
 
-      expect(createCall.passwordHash).toBeDefined();
-      expect(createCall.passwordHash).not.toBe(createDto.password);
+      expect(createArg.passwordHash).toBeDefined();
+      expect(createArg.passwordHash).not.toBe(createDto.password);
 
       const isValid = await bcrypt.compare(
         createDto.password,
-        createCall.passwordHash as string,
+        createArg.passwordHash,
       );
       expect(isValid).toBe(true);
     });

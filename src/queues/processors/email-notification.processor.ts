@@ -19,12 +19,17 @@ export class EmailNotificationProcessor extends WorkerHost {
     private readonly configService: ConfigService,
   ) {
     super();
+
     this.transporter = nodemailer.createTransport({
       host: this.configService.get<string>('smtp.host'),
       port: this.configService.get<number>('smtp.port'),
+      secure: this.configService.get<number>('smtp.port') === 465,
       auth: {
         user: this.configService.get<string>('smtp.username'),
         pass: this.configService.get<string>('smtp.password'),
+      },
+      tls: {
+        rejectUnauthorized: true,
       },
     });
   }

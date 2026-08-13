@@ -35,8 +35,13 @@ export class NotificationController extends BaseController {
     super();
   }
 
-  @ApiOperation({ summary: 'Get list notifications dengan pagination dan filter' })
-  @SwaggerResponse({ status: 200, description: 'Notifications retrieved successfully' })
+  @ApiOperation({
+    summary: 'Get list notifications dengan pagination dan filter',
+  })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Notifications retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @Get()
@@ -54,7 +59,10 @@ export class NotificationController extends BaseController {
 
   @ApiOperation({ summary: 'Get detail notification by ID' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @SwaggerResponse({ status: 200, description: 'Notification retrieved successfully' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Notification retrieved successfully',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 404, description: 'Notification not found' })
@@ -73,8 +81,14 @@ export class NotificationController extends BaseController {
 
   @ApiOperation({ summary: 'Kirim ulang notification yang gagal' })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  @SwaggerResponse({ status: 200, description: 'Notification queued for resend' })
-  @SwaggerResponse({ status: 400, description: 'Notification tidak dapat dikirim ulang' })
+  @SwaggerResponse({
+    status: 200,
+    description: 'Notification queued for resend',
+  })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Notification tidak dapat dikirim ulang',
+  })
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 404, description: 'Notification not found' })
