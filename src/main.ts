@@ -75,13 +75,13 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .addBearerAuth()
     .addTag('Auth', 'Authentication & authorization')
-    .addTag('Users', 'User management')
+    .addTag('Dashboard', 'Analytics dashboard')
     .addTag('Tenants', 'Tenant management')
+    .addTag('Users', 'User management')
     .addTag('Invoices', 'Invoice management')
     .addTag('POS Devices', 'POS device monitoring')
     .addTag('Notifications', 'Notification system')
     .addTag('Audit Logs', 'System audit logs')
-    .addTag('Dashboard', 'Analytics dashboard')
     .addTag('Events', 'Server-Sent Events (SSE)')
     .build();
 
@@ -91,7 +91,7 @@ async function bootstrap() {
       persistAuthorization: true,
       docExpansion: 'none',
       filter: true,
-      tagsSorter: 'alpha',
+      tagsSorter: 'none',
       operationsSorter: 'alpha',
     },
   });
