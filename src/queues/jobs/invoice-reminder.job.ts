@@ -9,4 +9,13 @@ export interface InvoiceReminderJobPayload {
   billingPeriod: string;
   dueDate: string;
   amount: number;
+  ownerName: string;
+  businessName: string;
+  invoiceNumber: string;
+  status: string;
+  notes: string | null;
+  planType: string;
+  outletCount: number;
+  ownerPhone: string | null;
+  issuedAt: string;
 }

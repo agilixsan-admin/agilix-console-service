@@ -45,6 +45,11 @@ export class EmailNotificationProcessor extends WorkerHost {
         to: recipient,
         subject,
         html: content,
+        attachments: job.data.attachments?.map((a) => ({
+          filename: a.filename,
+          content: Buffer.from(a.content, 'base64'),
+          contentType: a.contentType,
+        })),
       });
 
       await this.notificationService.markSent(notificationId, 'system');

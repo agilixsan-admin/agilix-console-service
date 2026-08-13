@@ -15,6 +15,7 @@ import { NotificationService } from '../../service/modules/notifications/notific
 import { NotificationStatus } from '../../types/enums/notification-status.enum';
 import { NotificationType } from '../../types/enums/notification-type.enum';
 import { EmailTemplateRepository } from '../../repositories/modules/email-template.repository';
+import { InvoicePdfService } from '../../service/modules/invoices/invoice-pdf.service';
 
 @Processor(INVOICE_REMINDER_QUEUE)
 export class InvoiceReminderProcessor extends WorkerHost {
@@ -23,6 +24,7 @@ export class InvoiceReminderProcessor extends WorkerHost {
   constructor(
     private readonly notificationService: NotificationService,
     private readonly emailTemplateRepository: EmailTemplateRepository,
+    private readonly invoicePdfService: InvoicePdfService,
     @InjectQueue(EMAIL_NOTIFICATION_QUEUE)
     private readonly emailQueue: Queue,
   ) {
@@ -31,12 +33,9 @@ export class InvoiceReminderProcessor extends WorkerHost {
 
   async process(job: Job<InvoiceReminderJobPayload>): Promise<void> {
     const {
-      invoiceId,
-      tenantId,
-      recipientEmail,
-      billingPeriod,
-      dueDate,
-      amount,
+      invoiceId, tenantId, recipientEmail, billingPeriod, dueDate, amount,
+      ownerName, businessName, invoiceNumber, status, notes,
+      planType, outletCount, ownerPhone, issuedAt,
     } = job.data;
 
     this.logger.log(`Processing reminder for invoice ${invoiceId}`);
@@ -44,14 +43,30 @@ export class InvoiceReminderProcessor extends WorkerHost {
     const { subject, html } = await this.emailTemplateRepository.render(
       'invoice-reminder',
       {
-        ownerName: recipientEmail,
-        businessName: tenantId,
-        invoiceNumber: invoiceId,
+        ownerName,
+        businessName,
+        invoiceNumber,
         billingPeriod,
         dueDate,
-        amount: amount.toLocaleString('id-ID'),
+        amount: Number(amount).toLocaleString('id-ID'),
       },
     );
+
+    const pdfBuffer = await this.invoicePdfService.generate({
+      invoiceNumber,
+      billingPeriod,
+      dueDate,
+      amount,
+      status,
+      notes,
+      businessName,
+      ownerName,
+      ownerEmail: recipientEmail,
+      ownerPhone,
+      planType,
+      outletCount,
+      issuedAt,
+    });
 
     const notification = await this.notificationService.create({
       tenantId,
@@ -68,6 +83,14 @@ export class InvoiceReminderProcessor extends WorkerHost {
       recipient: recipientEmail,
       subject,
       content: html,
+      attachments: [
+        {
+          filename: `${invoiceNumber}.pdf`,
+          content: pdfBuffer.toString('base64'),
+          encoding: 'base64',
+          contentType: 'application/pdf',
+        },
+      ],
     };
 
     await this.emailQueue.add(EMAIL_NOTIFICATION_JOB, emailPayload, {

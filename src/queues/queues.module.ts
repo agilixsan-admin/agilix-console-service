@@ -12,6 +12,7 @@ import { RealtimeModule } from '../routes/modules/realtime.module';
 import { NotificationModule } from '../routes/modules/notification.module';
 import { EmailTemplate } from '../models/email-template.model';
 import { EmailTemplateRepository } from '../repositories/modules/email-template.repository';
+import { InvoicePdfService } from '../service/modules/invoices/invoice-pdf.service';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { EmailTemplateRepository } from '../repositories/modules/email-template.
     InvoiceReminderProcessor,
     EmailNotificationProcessor,
     EmailTemplateRepository,
+    InvoicePdfService,
   ],
   exports: [BullModule],
 })
