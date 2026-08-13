@@ -35,9 +35,21 @@ export class InvoiceOverdueProcessor extends WorkerHost {
 
   async process(job: Job<InvoiceOverdueJobPayload>): Promise<void> {
     const {
-      invoiceId, tenantId, dueDate, recipientEmail,
-      ownerName, businessName, invoiceNumber, billingPeriod,
-      amount, status, notes, planType, outletCount, ownerPhone, issuedAt,
+      invoiceId,
+      tenantId,
+      dueDate,
+      recipientEmail,
+      ownerName,
+      businessName,
+      invoiceNumber,
+      billingPeriod,
+      amount,
+      status,
+      notes,
+      planType,
+      outletCount,
+      ownerPhone,
+      issuedAt,
     } = job.data;
 
     this.logger.log(`Processing overdue for invoice ${invoiceId}`);

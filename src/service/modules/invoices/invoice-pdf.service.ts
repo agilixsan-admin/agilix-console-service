@@ -23,16 +23,20 @@ export class InvoicePdfService {
   private readonly BRAND_LIGHT = '#EBF3FB';
   private readonly TEXT_GRAY = '#51545E';
   private readonly BORDER = '#EAEAEC';
-  private readonly W = 595.28; // A4 width pt
-  private readonly H = 841.89; // A4 height pt
-  private readonly ML = 50;    // margin left
-  private readonly MR = 50;    // margin right
-  private readonly CW = 595.28 - 100; // content width
+
+  // A5 landscape: 595.28 x 419.53 pt
+  private readonly W = 595.28;
+  private readonly H = 419.53;
+  private readonly ML = 36;
+  private readonly MR = 36;
+  private readonly MT = 20; // margin top
+  private readonly CW = 595.28 - 72; // 523.28
 
   generate(data: InvoicePdfData): Promise<Buffer> {
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({
-        size: 'A4',
+        size: 'A5',
+        layout: 'landscape',
         margin: 0,
         autoFirstPage: true,
       });
@@ -51,140 +55,222 @@ export class InvoicePdfService {
   private formatBillingPeriod(period: string): string {
     const [year, month] = period.split('-');
     const months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
     ];
     return `${months[parseInt(month, 10) - 1]} ${year}`;
   }
 
   private draw(doc: PDFKit.PDFDocument, data: InvoicePdfData): void {
     // ── Header bar ──────────────────────────────────────────────────────────
-    doc.rect(0, 0, this.W, 8).fill(this.BRAND_DARK);
+    doc.rect(0, 0, this.W, 6).fill(this.BRAND_DARK);
 
-    // Brand
-    doc.fillColor(this.BRAND_DARK).fontSize(20).font('Helvetica-Bold')
-      .text('AGILIX.id', this.ML, 28);
-    doc.fillColor(this.TEXT_GRAY).fontSize(8).font('Helvetica')
-      .text('SaaS Monitoring Tenant POS', this.ML, 52);
+    // Brand kiri
+    doc
+      .fillColor(this.BRAND_DARK)
+      .fontSize(16)
+      .font('Helvetica-Bold')
+      .text('AGILIX.id', this.ML, this.MT + 16);
+    doc
+      .fillColor(this.TEXT_GRAY)
+      .fontSize(7)
+      .font('Helvetica')
+      .text('SaaS Monitoring Tenant POS', this.ML, this.MT + 36);
 
-    // Invoice title
-    doc.fillColor(this.BRAND_DARK).fontSize(20).font('Helvetica-Bold')
-      .text('INVOICE', 0, 28, { align: 'right', width: this.W - this.MR });
-    doc.fillColor(this.TEXT_GRAY).fontSize(9).font('Helvetica')
-      .text(data.invoiceNumber, 0, 52, { align: 'right', width: this.W - this.MR });
+    // Invoice title kanan
+    doc
+      .fillColor(this.BRAND_DARK)
+      .fontSize(16)
+      .font('Helvetica-Bold')
+      .text('INVOICE', 0, this.MT + 16, {
+        align: 'right',
+        width: this.W - this.MR,
+      });
+    doc
+      .fillColor(this.TEXT_GRAY)
+      .fontSize(8)
+      .font('Helvetica')
+      .text(data.invoiceNumber, 0, this.MT + 36, {
+        align: 'right',
+        width: this.W - this.MR,
+      });
 
     // Status badge
     const statusColor =
-      data.status === 'PAID' ? '#27AE60' :
-      data.status === 'OVERDUE' ? '#E74C3C' : '#FEB45E';
-    doc.roundedRect(this.W - this.MR - 70, 64, 70, 18, 3).fill(statusColor);
-    doc.fillColor('#FFFFFF').fontSize(8).font('Helvetica-Bold')
-      .text(data.status, this.W - this.MR - 70, 69, { width: 70, align: 'center' });
+      data.status === 'PAID'
+        ? '#27AE60'
+        : data.status === 'OVERDUE'
+          ? '#E74C3C'
+          : '#FEB45E';
+    doc
+      .roundedRect(this.W - this.MR - 60, this.MT + 48, 60, 16, 3)
+      .fill(statusColor);
+    doc
+      .fillColor('#FFFFFF')
+      .fontSize(7)
+      .font('Helvetica-Bold')
+      .text(data.status, this.W - this.MR - 60, this.MT + 53, {
+        width: 60,
+        align: 'center',
+      });
 
     // ── Divider ─────────────────────────────────────────────────────────────
-    this.divider(doc, 96);
+    this.divider(doc, this.MT + 72);
 
-    // ── Billing info ─────────────────────────────────────────────────────────
-    const bY = 108;
+    // ── Billing info (2 kolom) ───────────────────────────────────────────────
+    const bY = this.MT + 82;
+    const col2X = 300;
 
-    doc.fillColor(this.BRAND_DARK).fontSize(8).font('Helvetica-Bold')
+    // Kolom kiri — Tagihan Kepada
+    doc
+      .fillColor(this.BRAND_DARK)
+      .fontSize(7)
+      .font('Helvetica-Bold')
       .text('TAGIHAN KEPADA', this.ML, bY);
-    doc.fillColor(this.TEXT_GRAY).fontSize(10).font('Helvetica-Bold')
-      .text(data.businessName, this.ML, bY + 14);
-    doc.font('Helvetica').fontSize(9)
-      .text(data.ownerName,   this.ML, bY + 28)
-      .text(data.ownerEmail,  this.ML, bY + 41)
-      .text(data.ownerPhone ?? '-', this.ML, bY + 54)
-      .text(`Paket: ${data.planType} | ${data.outletCount} Outlet`, this.ML, bY + 67);
+    doc
+      .fillColor(this.TEXT_GRAY)
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .text(data.businessName, this.ML, bY + 12);
+    doc
+      .font('Helvetica')
+      .fontSize(8)
+      .text(data.ownerName, this.ML, bY + 24)
+      .text(data.ownerEmail, this.ML, bY + 35)
+      .text(data.ownerPhone ?? '-', this.ML, bY + 46)
+      .text(
+        `Paket: ${data.planType} | ${data.outletCount} Outlet`,
+        this.ML,
+        bY + 57,
+      );
 
-    // Detail invoice kanan
-    const rX = 360;
-    doc.fillColor(this.BRAND_DARK).fontSize(8).font('Helvetica-Bold')
-      .text('DETAIL INVOICE', rX, bY);
+    // Kolom kanan — Detail Invoice
+    doc
+      .fillColor(this.BRAND_DARK)
+      .fontSize(7)
+      .font('Helvetica-Bold')
+      .text('DETAIL INVOICE', col2X, bY);
 
     const details: [string, string][] = [
-      ['Tanggal Terbit    :', data.issuedAt],
-      ['Periode Tagihan   :', this.formatBillingPeriod(data.billingPeriod)],
-      ['Jatuh Tempo       :', data.dueDate],
+      ['Tanggal Terbit', data.issuedAt],
+      ['Periode Tagihan', this.formatBillingPeriod(data.billingPeriod)],
+      ['Jatuh Tempo', data.dueDate],
     ];
     details.forEach(([label, value], i) => {
-      const ry = bY + 14 + i * 16;
-      doc.fillColor(this.TEXT_GRAY).fontSize(9).font('Helvetica')
-        .text(label, rX, ry)
-        .text(value, rX + 110, ry);
+      const ry = bY + 12 + i * 14;
+      doc
+        .fillColor(this.TEXT_GRAY)
+        .fontSize(8)
+        .font('Helvetica')
+        .text(label, col2X, ry, { width: 100 })
+        .text(value, col2X + 105, ry);
     });
 
     // ── Divider ─────────────────────────────────────────────────────────────
-    this.divider(doc, 196);
+    this.divider(doc, this.MT + 158);
 
     // ── Invoice table ────────────────────────────────────────────────────────
-    const tY = 208;
+    const tY = this.MT + 167;
 
-    // Header
-    doc.rect(this.ML, tY, this.CW, 22).fill(this.BRAND_DARK);
-    doc.fillColor('#FFFFFF').fontSize(8).font('Helvetica-Bold')
-      .text('DESKRIPSI',  this.ML + 8,  tY + 7)
-      .text('PERIODE',    this.ML + 260, tY + 7)
-      .text('JUMLAH', 0,  tY + 7, { align: 'right', width: this.W - this.MR });
+    // Header tabel
+    doc.rect(this.ML, tY, this.CW, 18).fill(this.BRAND_DARK);
+    doc
+      .fillColor('#FFFFFF')
+      .fontSize(7.5)
+      .font('Helvetica-Bold')
+      .text('DESKRIPSI', this.ML + 6, tY + 5)
+      .text('PERIODE', this.ML + 240, tY + 5)
+      .text('JUMLAH', 0, tY + 5, { align: 'right', width: this.W - this.MR });
 
-    // Row
-    const rY = tY + 22;
-    doc.rect(this.ML, rY, this.CW, 26).fill(this.BRAND_LIGHT);
-    doc.fillColor(this.TEXT_GRAY).fontSize(9).font('Helvetica')
-      .text(`Langganan Agilix - ${data.planType}`, this.ML + 8, rY + 9)
-      .text(this.formatBillingPeriod(data.billingPeriod), this.ML + 260, rY + 9);
-    doc.fillColor(this.BRAND_DARK).font('Helvetica-Bold')
+    // Row item
+    const rY = tY + 18;
+    doc.rect(this.ML, rY, this.CW, 22).fill(this.BRAND_LIGHT);
+    doc
+      .fillColor(this.TEXT_GRAY)
+      .fontSize(8)
+      .font('Helvetica')
+      .text(`Langganan Agilix - ${data.planType}`, this.ML + 6, rY + 7)
       .text(
-        `Rp ${Number(data.amount).toLocaleString('id-ID')}`,
-        0, rY + 9,
-        { align: 'right', width: this.W - this.MR },
+        this.formatBillingPeriod(data.billingPeriod),
+        this.ML + 240,
+        rY + 7,
       );
+    doc
+      .fillColor(this.BRAND_DARK)
+      .font('Helvetica-Bold')
+      .text(`Rp ${Number(data.amount).toLocaleString('id-ID')}`, 0, rY + 7, {
+        align: 'right',
+        width: this.W - this.MR,
+      });
 
     // Total bar
-    const totY = rY + 38;
-    doc.rect(this.ML + 260, totY, this.CW - 260, 28).fill(this.BRAND_DARK);
-    doc.fillColor('#FFFFFF').fontSize(9).font('Helvetica-Bold')
-      .text('TOTAL', this.ML + 268, totY + 10)
-      .text(
-        `Rp ${Number(data.amount).toLocaleString('id-ID')}`,
-        0, totY + 10,
-        { align: 'right', width: this.W - this.MR },
-      );
+    const totY = rY + 28;
+    doc.rect(this.ML + 240, totY, this.CW - 240, 22).fill(this.BRAND_DARK);
+    doc
+      .fillColor('#FFFFFF')
+      .fontSize(8)
+      .font('Helvetica-Bold')
+      .text('TOTAL', this.ML + 248, totY + 7)
+      .text(`Rp ${Number(data.amount).toLocaleString('id-ID')}`, 0, totY + 7, {
+        align: 'right',
+        width: this.W - this.MR,
+      });
 
     // Notes
     if (data.notes) {
-      doc.fillColor(this.TEXT_GRAY).fontSize(8).font('Helvetica')
-        .text(`Catatan: ${data.notes}`, this.ML, totY + 44, { width: this.CW });
+      doc
+        .fillColor(this.TEXT_GRAY)
+        .fontSize(7)
+        .font('Helvetica')
+        .text(`Catatan: ${data.notes}`, this.ML, totY + 30, { width: this.CW });
     }
 
-    // ── Divider ─────────────────────────────────────────────────────────────
-    this.divider(doc, 310);
-
     // ── Stamp area ───────────────────────────────────────────────────────────
-    const sY = 322;
-    doc.rect(this.ML, sY, 160, 80).strokeColor(this.BORDER).lineWidth(0.5).stroke();
-    doc.fillColor(this.TEXT_GRAY).fontSize(8).font('Helvetica')
-      .text('Tanda Tangan & Stempel', this.ML + 8, sY + 8)
-      .text('Agilix', this.ML + 8, sY + 66);
+    const sY = this.MT + 270;
+    doc
+      .rect(this.ML, sY, 130, 60)
+      .strokeColor(this.BORDER)
+      .lineWidth(0.5)
+      .stroke();
+    doc
+      .fillColor(this.TEXT_GRAY)
+      .fontSize(7)
+      .font('Helvetica')
+      .text('Tanda Tangan & Stempel', this.ML + 6, sY + 6)
+      .text('Agilix', this.ML + 6, sY + 50);
 
     // ── Footer ───────────────────────────────────────────────────────────────
-    const fY = this.H - 50;
-    doc.rect(this.ML, fY - 4, this.CW, 1).fill(this.BRAND_DARK);
-    doc.fillColor(this.TEXT_GRAY).fontSize(7.5).font('Helvetica')
+    const fY = this.H - 36;
+    doc.rect(this.ML, fY - 3, this.CW, 0.5).fill(this.BRAND_DARK);
+    doc
+      .fillColor(this.TEXT_GRAY)
+      .fontSize(6.5)
+      .font('Helvetica')
       .text(
         'Dokumen ini digenerate secara otomatis oleh sistem Agilix. Mohon tidak membalas email ini.',
-        this.ML, fY + 4,
+        this.ML,
+        fY + 4,
         { align: 'center', width: this.CW },
       )
-      .text(
-        '© 2026 Agilix. All rights reserved.',
-        this.ML, fY + 16,
-        { align: 'center', width: this.CW },
-      );
+      .text('© 2026 Agilix. All rights reserved.', this.ML, fY + 15, {
+        align: 'center',
+        width: this.CW,
+      });
   }
 
   private divider(doc: PDFKit.PDFDocument, y: number): void {
-    doc.moveTo(this.ML, y)
+    doc
+      .moveTo(this.ML, y)
       .lineTo(this.W - this.MR, y)
       .strokeColor(this.BORDER)
       .lineWidth(0.5)

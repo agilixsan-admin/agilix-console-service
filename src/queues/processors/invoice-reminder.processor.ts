@@ -33,9 +33,21 @@ export class InvoiceReminderProcessor extends WorkerHost {
 
   async process(job: Job<InvoiceReminderJobPayload>): Promise<void> {
     const {
-      invoiceId, tenantId, recipientEmail, billingPeriod, dueDate, amount,
-      ownerName, businessName, invoiceNumber, status, notes,
-      planType, outletCount, ownerPhone, issuedAt,
+      invoiceId,
+      tenantId,
+      recipientEmail,
+      billingPeriod,
+      dueDate,
+      amount,
+      ownerName,
+      businessName,
+      invoiceNumber,
+      status,
+      notes,
+      planType,
+      outletCount,
+      ownerPhone,
+      issuedAt,
     } = job.data;
 
     this.logger.log(`Processing reminder for invoice ${invoiceId}`);
