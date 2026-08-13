@@ -79,13 +79,13 @@ export class TenantRepository {
   async getMonthlyGrowth(
     months: number,
   ): Promise<{ month: string; count: number }[]> {
+    const safeMonths = Math.min(Math.max(Math.floor(months), 1), 24);
+
     const rows = await this.repo
       .createQueryBuilder('tenant')
       .select("TO_CHAR(tenant.createdAt, 'YYYY-MM')", 'month')
       .addSelect('COUNT(*)', 'count')
-      .where("tenant.createdAt >= NOW() - INTERVAL ':months months'", {
-        months,
-      })
+      .where(`tenant.createdAt >= NOW() - INTERVAL '${safeMonths} months'`)
       .andWhere('tenant.deletedAt IS NULL')
       .groupBy("TO_CHAR(tenant.createdAt, 'YYYY-MM')")
       .orderBy('month', 'ASC')

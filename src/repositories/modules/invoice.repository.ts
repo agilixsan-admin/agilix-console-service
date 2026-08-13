@@ -88,14 +88,15 @@ export class InvoiceRepository {
   async getRevenueByPeriod(
     months: number,
   ): Promise<{ period: string; total: number }[]> {
+    const safeMonths = Math.min(Math.max(Math.floor(months), 1), 24);
+
     const rows = await this.repo
       .createQueryBuilder('invoice')
       .select('invoice.billingPeriod', 'period')
       .addSelect('SUM(invoice.amount)', 'total')
       .where('invoice.status = :status', { status: InvoiceStatus.PAID })
       .andWhere(
-        "TO_DATE(invoice.billingPeriod, 'YYYY-MM') >= DATE_TRUNC('month', NOW()) - INTERVAL ':months months'",
-        { months },
+        `TO_DATE(invoice.billingPeriod, 'YYYY-MM') >= DATE_TRUNC('month', NOW()) - INTERVAL '${safeMonths} months'`,
       )
       .groupBy('invoice.billingPeriod')
       .orderBy('invoice.billingPeriod', 'ASC')
