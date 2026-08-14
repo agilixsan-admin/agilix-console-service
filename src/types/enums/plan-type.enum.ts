@@ -1,5 +1,4 @@
 export enum PlanType {
-  BASIC = 'BASIC',
-  PRO = 'PRO',
-  ENTERPRISE = 'ENTERPRISE',
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
 }
