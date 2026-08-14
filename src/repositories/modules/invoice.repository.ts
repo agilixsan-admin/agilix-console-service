@@ -77,6 +77,36 @@ export class InvoiceRepository {
     return this.repo.count({ where: { billingPeriod } });
   }
 
+  /**
+   * Invoice PENDING yang due date-nya jatuh pada N hari ke depan.
+   * Dipakai oleh InvoiceSchedulerService untuk trigger reminder email.
+   * JOIN ke tenant untuk dapat ownerEmail, ownerName, businessName, dll.
+   */
+  async findDueForReminder(daysAhead: number): Promise<Invoice[]> {
+    return this.repo
+      .createQueryBuilder('invoice')
+      .leftJoinAndSelect('invoice.tenant', 'tenant')
+      .where('invoice.status = :status', { status: InvoiceStatus.PENDING })
+      .andWhere(
+        `DATE(invoice.dueDate) = DATE(NOW() + INTERVAL '${Math.floor(daysAhead)} days')`,
+      )
+      .getMany();
+  }
+
+  /**
+   * Invoice PENDING yang due date-nya sudah lewat (overdue).
+   * Dipakai oleh InvoiceSchedulerService untuk trigger overdue email.
+   * JOIN ke tenant untuk dapat ownerEmail, ownerName, businessName, dll.
+   */
+  async findOverdue(): Promise<Invoice[]> {
+    return this.repo
+      .createQueryBuilder('invoice')
+      .leftJoinAndSelect('invoice.tenant', 'tenant')
+      .where('invoice.status = :status', { status: InvoiceStatus.PENDING })
+      .andWhere('DATE(invoice.dueDate) < DATE(NOW())')
+      .getMany();
+  }
+
   async countOverdue(): Promise<number> {
     return this.repo
       .createQueryBuilder('invoice')

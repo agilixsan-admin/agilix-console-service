@@ -44,6 +44,7 @@ import { PosDeviceModule } from './routes/modules/pos-device.module';
 import { NotificationModule } from './routes/modules/notification.module';
 import { QueuesModule } from './queues/queues.module';
 import { DashboardModule } from './routes/modules/dashboard.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -131,6 +132,7 @@ import { DashboardModule } from './routes/modules/dashboard.module';
     NotificationModule,
     QueuesModule,
     DashboardModule,
+    ScheduleModule.forRoot(),
   ],
   providers: [
     // Global rate limiter — applies ThrottlerGuard to all routes.
