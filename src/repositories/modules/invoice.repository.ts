@@ -78,7 +78,7 @@ export class InvoiceRepository {
   }
 
   /**
-   * Invoice PENDING yang due date-nya jatuh pada N hari ke depan.
+   * Invoice PENDING yang due date-nya jatuh antara hari ini sampai N hari ke depan.
    * Dipakai oleh InvoiceSchedulerService untuk trigger reminder email.
    * JOIN ke tenant untuk dapat ownerEmail, ownerName, businessName, dll.
    */
@@ -87,8 +87,9 @@ export class InvoiceRepository {
       .createQueryBuilder('invoice')
       .leftJoinAndSelect('invoice.tenant', 'tenant')
       .where('invoice.status = :status', { status: InvoiceStatus.PENDING })
+      .andWhere('DATE(invoice.dueDate) >= DATE(NOW())')
       .andWhere(
-        `DATE(invoice.dueDate) = DATE(NOW() + INTERVAL '${Math.floor(daysAhead)} days')`,
+        `DATE(invoice.dueDate) <= DATE(NOW() + INTERVAL '${Math.floor(daysAhead)} days')`,
       )
       .getMany();
   }

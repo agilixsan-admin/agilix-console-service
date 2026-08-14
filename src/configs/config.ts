@@ -38,3 +38,9 @@ export const smtpConfig = registerAs('smtp', () => ({
 export const bcryptConfig = registerAs('bcrypt', () => ({
   saltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS ?? '12', 10),
 }));
+
+export const cronConfig = registerAs('cron', () => ({
+  // Format: "MENIT JAM * * *" — default reminder jam 08:00, overdue jam 09:00
+  reminderSchedule: process.env.CRON_INVOICE_REMINDER ?? '0 8 * * *',
+  overdueSchedule: process.env.CRON_INVOICE_OVERDUE ?? '0 9 * * *',
+}));

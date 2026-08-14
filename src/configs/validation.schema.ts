@@ -56,4 +56,8 @@ export const validationSchema = Joi.object({
 
   // CORS
   CORS_ORIGIN: Joi.string().allow('').optional(),
+
+  // Cron Schedule — format cron expression "MENIT JAM * * *"
+  CRON_INVOICE_REMINDER: Joi.string().default('0 8 * * *'),
+  CRON_INVOICE_OVERDUE: Joi.string().default('0 9 * * *'),
 });

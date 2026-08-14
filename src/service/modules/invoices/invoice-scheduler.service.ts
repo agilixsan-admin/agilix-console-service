@@ -1,7 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { CronJob } from 'cron';
 import { InvoiceRepository } from '../../../repositories/modules/invoice.repository';
 import {
   INVOICE_REMINDER_QUEUE,
@@ -16,24 +18,51 @@ import {
 import { Invoice } from '../../../models/invoice.model';
 
 @Injectable()
-export class InvoiceSchedulerService {
+export class InvoiceSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(InvoiceSchedulerService.name);
 
   constructor(
     private readonly invoiceRepository: InvoiceRepository,
+    private readonly configService: ConfigService,
+    private readonly schedulerRegistry: SchedulerRegistry,
     @InjectQueue(INVOICE_REMINDER_QUEUE)
     private readonly reminderQueue: Queue,
     @InjectQueue(INVOICE_OVERDUE_QUEUE)
     private readonly overdueQueue: Queue,
   ) {}
 
-  /**
-   * Jalan setiap hari jam 08:00.
-   * Scan invoice PENDING yang jatuh tempo 3 hari ke depan → kirim reminder email.
-   */
-  @Cron('0 10 8 * * *', { name: 'invoice-reminder-scan' })
+  onModuleInit(): void {
+    const reminderSchedule =
+      this.configService.get<string>('cron.reminderSchedule') ?? '0 8 * * *';
+    const overdueSchedule =
+      this.configService.get<string>('cron.overdueSchedule') ?? '0 9 * * *';
+
+    const reminderJob = new CronJob(reminderSchedule, () => {
+      void this.handleReminderScan();
+    });
+
+    const overdueJob = new CronJob(overdueSchedule, () => {
+      void this.handleOverdueScan();
+    });
+
+    this.schedulerRegistry.addCronJob('invoice-reminder-scan', reminderJob);
+    this.schedulerRegistry.addCronJob('invoice-overdue-scan', overdueJob);
+
+    reminderJob.start();
+    overdueJob.start();
+
+    this.logger.log(
+      `⏰ Invoice reminder cron registered — schedule: "${reminderSchedule}"`,
+    );
+    this.logger.log(
+      `⏰ Invoice overdue cron registered  — schedule: "${overdueSchedule}"`,
+    );
+  }
+
   async handleReminderScan(): Promise<void> {
-    this.logger.log('⏰ [Cron] Starting invoice reminder scan (due in 3 days)');
+    this.logger.log(
+      '⏰ [Cron] Starting invoice reminder scan (due H-0 to H-3)',
+    );
 
     try {
       const invoices = await this.invoiceRepository.findDueForReminder(3);
@@ -62,7 +91,6 @@ export class InvoiceSchedulerService {
         await this.reminderQueue.add(INVOICE_REMINDER_JOB, payload, {
           attempts: 3,
           backoff: { type: 'exponential', delay: 5000 },
-          // Deduplicate: satu invoice tidak dikirim dua kali dalam satu hari
           jobId: `reminder-${invoice.id}-${new Date().toISOString().slice(0, 10)}`,
         });
 
@@ -76,11 +104,6 @@ export class InvoiceSchedulerService {
     }
   }
 
-  /**
-   * Jalan setiap hari jam 09:00.
-   * Scan invoice PENDING yang sudah melewati due date → kirim overdue email.
-   */
-  @Cron('0 0 10 30 * *', { name: 'invoice-overdue-scan' })
   async handleOverdueScan(): Promise<void> {
     this.logger.log('⏰ [Cron] Starting invoice overdue scan');
 
@@ -109,7 +132,6 @@ export class InvoiceSchedulerService {
         await this.overdueQueue.add(INVOICE_OVERDUE_JOB, payload, {
           attempts: 3,
           backoff: { type: 'exponential', delay: 5000 },
-          // Deduplicate: satu invoice tidak dikirim dua kali dalam satu hari
           jobId: `overdue-${invoice.id}-${new Date().toISOString().slice(0, 10)}`,
         });
 
