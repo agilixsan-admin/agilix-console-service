@@ -9,7 +9,7 @@ export class CreateTenantsTable1723143800000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE TYPE "plan_type_enum" AS ENUM ('BASIC', 'PRO', 'ENTERPRISE')
+      CREATE TYPE "plan_type_enum" AS ENUM ('MONTHLY', 'YEARLY')
     `);
 
     await queryRunner.query(`
@@ -24,6 +24,8 @@ export class CreateTenantsTable1723143800000 implements MigrationInterface {
         "status"        "tenant_status_enum"  NOT NULL DEFAULT 'ACTIVE',
         "expiry_date"   DATE                  NOT NULL,
         "notes"         TEXT                          DEFAULT NULL,
+        "erp_webhook_url" VARCHAR(500)                DEFAULT NULL,
+        "erp_webhook_key" VARCHAR(255)                DEFAULT NULL,
         "created_by"    UUID                  NOT NULL,
         "created_at"    TIMESTAMPTZ           NOT NULL DEFAULT NOW(),
         "updated_at"    TIMESTAMPTZ           NOT NULL DEFAULT NOW(),

@@ -19,6 +19,9 @@ export class CreateInvoicesTable1723143900000 implements MigrationInterface {
         "paid_at"        TIMESTAMPTZ                    DEFAULT NULL,
         "status"         "invoice_status_enum"  NOT NULL DEFAULT 'PENDING',
         "notes"          TEXT                           DEFAULT NULL,
+        "reminder_sent_at"     TIMESTAMPTZ            DEFAULT NULL,
+        "overdue_notified_at"  TIMESTAMPTZ            DEFAULT NULL,
+        "overdue_follow_up_at" TIMESTAMPTZ            DEFAULT NULL,
         "created_at"     TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
         "updated_at"     TIMESTAMPTZ            NOT NULL DEFAULT NOW(),
 
