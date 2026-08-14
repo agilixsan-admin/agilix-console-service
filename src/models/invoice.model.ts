@@ -49,6 +49,15 @@ export class Invoice {
   @Column({ name: 'notes', type: 'text', nullable: true })
   notes: string | null;
 
+  @Column({ name: 'reminder_sent_at', type: 'timestamptz', nullable: true })
+  reminderSentAt: Date | null;
+
+  @Column({ name: 'overdue_notified_at', type: 'timestamptz', nullable: true })
+  overdueNotifiedAt: Date | null;
+
+  @Column({ name: 'overdue_follow_up_at', type: 'timestamptz', nullable: true })
+  overdueFollowUpAt: Date | null;
+
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 

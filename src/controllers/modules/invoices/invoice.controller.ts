@@ -136,4 +136,24 @@ export class InvoiceController extends BaseController {
     const invoice = await this.invoiceService.cancel(id, actor.id);
     return this.success(invoice, 'Invoice cancelled successfully');
   }
+
+  @ApiOperation({ summary: 'Kirim manual reminder email untuk invoice' })
+  @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
+  @SwaggerResponse({ status: 200, description: 'Reminder queued successfully' })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Invoice sudah paid atau cancelled',
+  })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @SwaggerResponse({ status: 403, description: 'Forbidden' })
+  @SwaggerResponse({ status: 404, description: 'Invoice not found' })
+  @Post(':id/send-reminder')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  async sendReminder(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
+    await this.invoiceService.sendReminder(id);
+    return this.success(null, 'Reminder queued successfully');
+  }
 }

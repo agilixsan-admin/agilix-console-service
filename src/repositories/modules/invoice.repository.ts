@@ -78,9 +78,8 @@ export class InvoiceRepository {
   }
 
   /**
-   * Invoice PENDING yang due date-nya jatuh antara hari ini sampai N hari ke depan.
-   * Dipakai oleh InvoiceSchedulerService untuk trigger reminder email.
-   * JOIN ke tenant untuk dapat ownerEmail, ownerName, businessName, dll.
+   * Invoice PENDING yang due date-nya jatuh antara hari ini sampai N hari ke depan
+   * DAN belum pernah dikirim reminder (reminderSentAt IS NULL).
    */
   async findDueForReminder(daysAhead: number): Promise<Invoice[]> {
     return this.repo
@@ -91,13 +90,12 @@ export class InvoiceRepository {
       .andWhere(
         `DATE(invoice.dueDate) <= DATE(NOW() + INTERVAL '${Math.floor(daysAhead)} days')`,
       )
+      .andWhere('invoice.reminderSentAt IS NULL')
       .getMany();
   }
 
   /**
-   * Invoice PENDING yang due date-nya sudah lewat (overdue).
-   * Dipakai oleh InvoiceSchedulerService untuk trigger overdue email.
-   * JOIN ke tenant untuk dapat ownerEmail, ownerName, businessName, dll.
+   * Invoice PENDING yang sudah overdue DAN belum pernah dikirim notifikasi overdue.
    */
   async findOverdue(): Promise<Invoice[]> {
     return this.repo
@@ -105,7 +103,39 @@ export class InvoiceRepository {
       .leftJoinAndSelect('invoice.tenant', 'tenant')
       .where('invoice.status = :status', { status: InvoiceStatus.PENDING })
       .andWhere('DATE(invoice.dueDate) < DATE(NOW())')
+      .andWhere('invoice.overdueNotifiedAt IS NULL')
       .getMany();
+  }
+
+  /**
+   * Invoice PENDING yang sudah overdue, sudah dikirim notifikasi overdue,
+   * tapi belum dikirim follow-up H+3 dan sudah 3 hari sejak notifikasi pertama.
+   */
+  async findOverdueFollowUp(): Promise<Invoice[]> {
+    return this.repo
+      .createQueryBuilder('invoice')
+      .leftJoinAndSelect('invoice.tenant', 'tenant')
+      .where('invoice.status = :status', { status: InvoiceStatus.PENDING })
+      .andWhere('DATE(invoice.dueDate) < DATE(NOW())')
+      .andWhere('invoice.overdueNotifiedAt IS NOT NULL')
+      .andWhere('invoice.overdueFollowUpAt IS NULL')
+      .andWhere(`invoice.overdueNotifiedAt <= NOW() - INTERVAL '3 days'`)
+      .getMany();
+  }
+
+  /**
+   * Update flag timestamp pada invoice setelah job di-enqueue.
+   */
+  async updateFlags(
+    id: string,
+    flags: Partial<
+      Pick<
+        Invoice,
+        'reminderSentAt' | 'overdueNotifiedAt' | 'overdueFollowUpAt'
+      >
+    >,
+  ): Promise<void> {
+    await this.repo.update(id, flags);
   }
 
   async countOverdue(): Promise<number> {

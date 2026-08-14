@@ -1,9 +1,12 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getQueueToken } from '@nestjs/bullmq';
 import { InvoiceService } from '../../src/service/modules/invoices/invoice.service';
 import { InvoiceRepository } from '../../src/repositories/modules/invoice.repository';
+import { TenantRepository } from '../../src/repositories/modules/tenant.repository';
 import { AuditLogService } from '../../src/service/modules/audit-logs/audit-log.service';
 import { EventPublisherService } from '../../src/events/event-publisher.service';
+import { INVOICE_REMINDER_QUEUE } from '../../src/queues/jobs/invoice-reminder.job';
 import { InvoiceStatus } from '../../src/types/enums/invoice-status.enum';
 import { AuditAction } from '../../src/types/enums/audit-action.enum';
 import {
@@ -18,8 +21,10 @@ import {
   buildInvoice,
   buildPaginatedResult,
   mockInvoiceRepository,
+  mockTenantRepository,
   mockAuditLogService,
   mockEventPublisherService,
+  mockEmailQueue,
 } from '../config/functionUnitTest';
 
 describe('InvoiceService', () => {
@@ -33,10 +38,15 @@ describe('InvoiceService', () => {
       providers: [
         InvoiceService,
         { provide: InvoiceRepository, useFactory: mockInvoiceRepository },
+        { provide: TenantRepository, useFactory: mockTenantRepository },
         { provide: AuditLogService, useFactory: mockAuditLogService },
         {
           provide: EventPublisherService,
           useFactory: mockEventPublisherService,
+        },
+        {
+          provide: getQueueToken(INVOICE_REMINDER_QUEUE),
+          useFactory: mockEmailQueue,
         },
       ],
     }).compile();

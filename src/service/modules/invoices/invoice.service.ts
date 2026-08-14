@@ -3,8 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { Invoice } from '../../../models/invoice.model';
 import { InvoiceRepository } from '../../../repositories/modules/invoice.repository';
+import { TenantRepository } from '../../../repositories/modules/tenant.repository';
 import { PaginatedResult } from '../../../types/response.types';
 import { CreateInvoiceDto } from '../../../dto/invoice/create-invoice.dto';
 import { PayInvoiceDto } from '../../../dto/invoice/pay-invoice.dto';
@@ -13,13 +16,21 @@ import { AuditLogService } from '../audit-logs/audit-log.service';
 import { EventPublisherService } from '../../../events/event-publisher.service';
 import { AuditAction } from '../../../types/enums/audit-action.enum';
 import { InvoiceStatus } from '../../../types/enums/invoice-status.enum';
+import {
+  INVOICE_REMINDER_QUEUE,
+  INVOICE_REMINDER_JOB,
+  InvoiceReminderJobPayload,
+} from '../../../queues/jobs/invoice-reminder.job';
 
 @Injectable()
 export class InvoiceService {
   constructor(
     private readonly invoiceRepository: InvoiceRepository,
+    private readonly tenantRepository: TenantRepository,
     private readonly auditLogService: AuditLogService,
     private readonly eventPublisher: EventPublisherService,
+    @InjectQueue(INVOICE_REMINDER_QUEUE)
+    private readonly reminderQueue: Queue,
   ) {}
 
   async findAll(
@@ -156,5 +167,55 @@ export class InvoiceService {
     const sequence = String(count + 1).padStart(4, '0');
 
     return `${prefix}-${sequence}`;
+  }
+
+  /**
+   * Manual trigger — kirim reminder email untuk invoice tertentu.
+   * Tidak cek flag, bisa dipakai kapanpun oleh admin.
+   */
+  async sendReminder(id: string): Promise<void> {
+    const invoice = await this.findById(id);
+
+    if (invoice.status === InvoiceStatus.PAID) {
+      throw new BadRequestException('Cannot send reminder for a paid invoice');
+    }
+
+    if (invoice.status === InvoiceStatus.CANCELLED) {
+      throw new BadRequestException(
+        'Cannot send reminder for a cancelled invoice',
+      );
+    }
+
+    const tenant = await this.tenantRepository.findById(invoice.tenantId);
+    if (!tenant) {
+      throw new NotFoundException(`Tenant for invoice "${id}" not found`);
+    }
+
+    const payload: InvoiceReminderJobPayload = {
+      invoiceId: invoice.id,
+      tenantId: invoice.tenantId,
+      recipientEmail: tenant.ownerEmail,
+      ownerName: tenant.ownerName,
+      businessName: tenant.businessName,
+      invoiceNumber: invoice.invoiceNumber,
+      billingPeriod: invoice.billingPeriod,
+      dueDate: new Date(invoice.dueDate).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      }),
+      amount: Number(invoice.amount),
+      status: invoice.status,
+      notes: invoice.notes,
+      planType: tenant.planType,
+      outletCount: tenant.outletCount,
+      ownerPhone: tenant.ownerPhone,
+      issuedAt: invoice.createdAt.toISOString(),
+    };
+
+    await this.reminderQueue.add(INVOICE_REMINDER_JOB, payload, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 5000 },
+    });
   }
 }

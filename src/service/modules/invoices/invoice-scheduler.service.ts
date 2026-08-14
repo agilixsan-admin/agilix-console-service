@@ -59,6 +59,10 @@ export class InvoiceSchedulerService implements OnModuleInit {
     );
   }
 
+  /**
+   * Scan invoice PENDING due H-0 sampai H-3 yang belum pernah dikirim reminder.
+   * Set reminderSentAt setelah job di-enqueue supaya tidak dikirim lagi.
+   */
   async handleReminderScan(): Promise<void> {
     this.logger.log(
       '⏰ [Cron] Starting invoice reminder scan (due H-0 to H-3)',
@@ -85,13 +89,15 @@ export class InvoiceSchedulerService implements OnModuleInit {
           continue;
         }
 
-        const payload: InvoiceReminderJobPayload =
-          this.buildReminderPayload(invoice);
+        await this.reminderQueue.add(
+          INVOICE_REMINDER_JOB,
+          this.buildReminderPayload(invoice),
+          { attempts: 3, backoff: { type: 'exponential', delay: 5000 } },
+        );
 
-        await this.reminderQueue.add(INVOICE_REMINDER_JOB, payload, {
-          attempts: 3,
-          backoff: { type: 'exponential', delay: 5000 },
-          jobId: `reminder-${invoice.id}-${new Date().toISOString().slice(0, 10)}`,
+        // Set flag supaya tidak dikirim lagi
+        await this.invoiceRepository.updateFlags(invoice.id, {
+          reminderSentAt: new Date(),
         });
 
         queued++;
@@ -104,41 +110,89 @@ export class InvoiceSchedulerService implements OnModuleInit {
     }
   }
 
+  /**
+   * Scan invoice PENDING overdue yang belum pernah dikirim notifikasi.
+   * Set overdueNotifiedAt setelah job di-enqueue.
+   *
+   * Juga scan invoice overdue yang sudah dikirim notifikasi H+3 lalu (follow-up).
+   * Set overdueFollowUpAt setelah job di-enqueue.
+   */
   async handleOverdueScan(): Promise<void> {
     this.logger.log('⏰ [Cron] Starting invoice overdue scan');
 
     try {
-      const invoices = await this.invoiceRepository.findOverdue();
+      // --- Notifikasi overdue pertama kali ---
+      const overdueInvoices = await this.invoiceRepository.findOverdue();
 
-      if (invoices.length === 0) {
-        this.logger.log('[Cron] No overdue invoices found today');
-        return;
-      }
+      if (overdueInvoices.length > 0) {
+        this.logger.log(
+          `[Cron] Found ${overdueInvoices.length} overdue invoice(s) (first notification)`,
+        );
 
-      this.logger.log(`[Cron] Found ${invoices.length} overdue invoice(s)`);
+        let queued = 0;
+        for (const invoice of overdueInvoices) {
+          if (!invoice.tenant) {
+            this.logger.warn(
+              `[Cron] Invoice ${invoice.id} has no tenant, skipping`,
+            );
+            continue;
+          }
 
-      let queued = 0;
-      for (const invoice of invoices) {
-        if (!invoice.tenant) {
-          this.logger.warn(
-            `[Cron] Invoice ${invoice.id} has no tenant, skipping`,
+          await this.overdueQueue.add(
+            INVOICE_OVERDUE_JOB,
+            this.buildOverduePayload(invoice),
+            { attempts: 3, backoff: { type: 'exponential', delay: 5000 } },
           );
-          continue;
+
+          // Set flag supaya tidak dikirim lagi
+          await this.invoiceRepository.updateFlags(invoice.id, {
+            overdueNotifiedAt: new Date(),
+          });
+
+          queued++;
         }
 
-        const payload: InvoiceOverdueJobPayload =
-          this.buildOverduePayload(invoice);
-
-        await this.overdueQueue.add(INVOICE_OVERDUE_JOB, payload, {
-          attempts: 3,
-          backoff: { type: 'exponential', delay: 5000 },
-          jobId: `overdue-${invoice.id}-${new Date().toISOString().slice(0, 10)}`,
-        });
-
-        queued++;
+        this.logger.log(`[Cron] Overdue scan done — ${queued} job(s) queued`);
+      } else {
+        this.logger.log('[Cron] No new overdue invoices today');
       }
 
-      this.logger.log(`[Cron] Overdue scan done — ${queued} job(s) queued`);
+      // --- Follow-up H+3 dari notifikasi overdue pertama ---
+      const followUpInvoices =
+        await this.invoiceRepository.findOverdueFollowUp();
+
+      if (followUpInvoices.length > 0) {
+        this.logger.log(
+          `[Cron] Found ${followUpInvoices.length} overdue invoice(s) for H+3 follow-up`,
+        );
+
+        let queued = 0;
+        for (const invoice of followUpInvoices) {
+          if (!invoice.tenant) {
+            this.logger.warn(
+              `[Cron] Invoice ${invoice.id} has no tenant, skipping`,
+            );
+            continue;
+          }
+
+          await this.overdueQueue.add(
+            INVOICE_OVERDUE_JOB,
+            this.buildOverduePayload(invoice),
+            { attempts: 3, backoff: { type: 'exponential', delay: 5000 } },
+          );
+
+          // Set flag supaya tidak dikirim lagi
+          await this.invoiceRepository.updateFlags(invoice.id, {
+            overdueFollowUpAt: new Date(),
+          });
+
+          queued++;
+        }
+
+        this.logger.log(`[Cron] Follow-up scan done — ${queued} job(s) queued`);
+      } else {
+        this.logger.log('[Cron] No overdue follow-up invoices today');
+      }
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       this.logger.error(`[Cron] Overdue scan failed: ${msg}`);
