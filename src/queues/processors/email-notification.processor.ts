@@ -56,7 +56,7 @@ export class EmailNotificationProcessor extends WorkerHost {
         })),
       });
 
-      await this.notificationService.markSent(notificationId, 'system');
+      await this.notificationService.markSent(notificationId);
 
       this.logger.log(
         `Email sent successfully for notification ${notificationId}`,

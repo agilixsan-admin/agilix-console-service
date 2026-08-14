@@ -43,7 +43,7 @@ export class NotificationService {
     return this.notificationRepository.create(data);
   }
 
-  async markSent(id: string, actorId: string): Promise<Notification> {
+  async markSent(id: string, actorId?: string): Promise<Notification> {
     const notification = await this.findById(id);
 
     const updated = await this.notificationRepository.update(id, {
@@ -52,14 +52,21 @@ export class NotificationService {
       failureReason: null,
     });
 
-    await this.auditLogService.log({
-      actorId,
-      tenantId: notification.tenantId,
-      action: AuditAction.NOTIFICATION_SENT,
-      targetType: 'Notification',
-      targetId: id,
-      metadata: { type: notification.type, recipient: notification.recipient },
-    });
+    // Audit log hanya dicatat jika dipanggil oleh user (ada actorId UUID valid).
+    // Operasi otomatis dari processor tidak memiliki actorId dan tidak di-audit.
+    if (actorId) {
+      await this.auditLogService.log({
+        actorId,
+        tenantId: notification.tenantId,
+        action: AuditAction.NOTIFICATION_SENT,
+        targetType: 'Notification',
+        targetId: id,
+        metadata: {
+          type: notification.type,
+          recipient: notification.recipient,
+        },
+      });
+    }
 
     this.eventPublisher.publishNotificationSent({
       notificationId: id,
