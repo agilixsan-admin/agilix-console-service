@@ -1,20 +1,6 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-
-/**
- * TokenBlacklistService
- *
- * Menyimpan refresh token yang telah di-revoke (saat logout) ke Redis.
- * Token di-blacklist dengan TTL yang sama dengan masa berlaku refresh token,
- * sehingga entry Redis otomatis terhapus saat token sudah expired.
- *
- * Referensi:
- *   - IMPLEMENTATION_ROADMAP.md Phase 1 § Refresh Token
- *   - ARCHITECTURE_RULES.md § Service Rules
- *
- * Prefix key Redis: `blacklist:rt:{token}`
- */
 @Injectable()
 export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
   private client: Redis;

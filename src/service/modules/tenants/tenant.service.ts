@@ -1,8 +1,11 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { Tenant } from '../../../models/tenant.model';
 import { TenantRepository } from '../../../repositories/modules/tenant.repository';
 import { PaginatedResult } from '../../../types/response.types';
@@ -11,15 +14,30 @@ import { UpdateTenantDto } from '../../../dto/tenant/update-tenant.dto';
 import { ListTenantsQueryDto } from '../../../dto/tenant/list-tenants-query.dto';
 import { AuditLogService } from '../audit-logs/audit-log.service';
 import { EventPublisherService } from '../../../events/event-publisher.service';
+import { NotificationService } from '../notifications/notification.service';
+import { EmailTemplateRepository } from '../../../repositories/modules/email-template.repository';
 import { AuditAction } from '../../../types/enums/audit-action.enum';
 import { TenantStatus } from '../../../types/enums/tenant-status.enum';
+import { NotificationStatus } from '../../../types/enums/notification-status.enum';
+import { NotificationType } from '../../../types/enums/notification-type.enum';
+import {
+  EMAIL_NOTIFICATION_QUEUE,
+  EMAIL_NOTIFICATION_JOB,
+  EmailNotificationJobPayload,
+} from '../../../queues/jobs/email-notification.job';
 
 @Injectable()
 export class TenantService {
+  private readonly logger = new Logger(TenantService.name);
+
   constructor(
     private readonly tenantRepository: TenantRepository,
     private readonly auditLogService: AuditLogService,
     private readonly eventPublisher: EventPublisherService,
+    private readonly notificationService: NotificationService,
+    private readonly emailTemplateRepository: EmailTemplateRepository,
+    @InjectQueue(EMAIL_NOTIFICATION_QUEUE)
+    private readonly emailQueue: Queue,
   ) {}
 
   async findAll(query: ListTenantsQueryDto): Promise<PaginatedResult<Tenant>> {
@@ -77,7 +95,62 @@ export class TenantService {
       status: tenant.status,
     });
 
+    await this.sendWelcomeEmail(tenant);
+
     return tenant;
+  }
+
+  private async sendWelcomeEmail(tenant: Tenant): Promise<void> {
+    try {
+      const expiryDate = new Date(tenant.expiryDate).toLocaleDateString(
+        'id-ID',
+        { day: 'numeric', month: 'long', year: 'numeric' },
+      );
+
+      const { subject, html } = await this.emailTemplateRepository.render(
+        'welcome',
+        {
+          ownerName: tenant.ownerName,
+          businessName: tenant.businessName,
+          planType: tenant.planType,
+          outletCount: String(tenant.outletCount),
+          expiryDate,
+        },
+      );
+
+      const notification = await this.notificationService.create({
+        tenantId: tenant.id,
+        type: NotificationType.WELCOME_EMAIL,
+        recipient: tenant.ownerEmail,
+        subject,
+        content: html,
+        status: NotificationStatus.PENDING,
+      });
+
+      const payload: EmailNotificationJobPayload = {
+        notificationId: notification.id,
+        tenantId: tenant.id,
+        recipient: tenant.ownerEmail,
+        subject,
+        content: html,
+      };
+
+      await this.emailQueue.add(EMAIL_NOTIFICATION_JOB, payload, {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+      });
+
+      this.logger.log(
+        `Welcome email queued for tenant ${tenant.id} → ${tenant.ownerEmail}`,
+      );
+    } catch (error) {
+      // Jangan gagalkan proses create tenant hanya karena email gagal di-queue.
+      // Error di-log untuk observability.
+      const reason = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `Failed to queue welcome email for tenant ${tenant.id}: ${reason}`,
+      );
+    }
   }
 
   async update(
