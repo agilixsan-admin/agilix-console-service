@@ -1,9 +1,14 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getQueueToken } from '@nestjs/bullmq';
 import { TenantService } from '../../src/service/modules/tenants/tenant.service';
 import { TenantRepository } from '../../src/repositories/modules/tenant.repository';
 import { AuditLogService } from '../../src/service/modules/audit-logs/audit-log.service';
 import { EventPublisherService } from '../../src/events/event-publisher.service';
+import { NotificationService } from '../../src/service/modules/notifications/notification.service';
+import { EmailTemplateRepository } from '../../src/repositories/modules/email-template.repository';
+import { WebhookDispatcherService } from '../../src/service/modules/webhook-dispatcher.service';
+import { EMAIL_NOTIFICATION_QUEUE } from '../../src/queues/jobs/email-notification.job';
 import { TenantStatus } from '../../src/types/enums/tenant-status.enum';
 import { PlanType } from '../../src/types/enums/plan-type.enum';
 import { AuditAction } from '../../src/types/enums/audit-action.enum';
@@ -20,6 +25,10 @@ import {
   mockTenantRepository,
   mockAuditLogService,
   mockEventPublisherService,
+  mockNotificationService,
+  mockEmailTemplateRepository,
+  mockWebhookDispatcherService,
+  mockEmailQueue,
 } from '../config/functionUnitTest';
 
 describe('TenantService', () => {
@@ -34,10 +43,11 @@ describe('TenantService', () => {
         TenantService,
         { provide: TenantRepository, useFactory: mockTenantRepository },
         { provide: AuditLogService, useFactory: mockAuditLogService },
-        {
-          provide: EventPublisherService,
-          useFactory: mockEventPublisherService,
-        },
+        { provide: EventPublisherService, useFactory: mockEventPublisherService },
+        { provide: NotificationService, useFactory: mockNotificationService },
+        { provide: EmailTemplateRepository, useFactory: mockEmailTemplateRepository },
+        { provide: WebhookDispatcherService, useFactory: mockWebhookDispatcherService },
+        { provide: getQueueToken(EMAIL_NOTIFICATION_QUEUE), useFactory: mockEmailQueue },
       ],
     }).compile();
 

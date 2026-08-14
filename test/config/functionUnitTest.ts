@@ -398,3 +398,52 @@ export function mockDashboardPosDeviceRepository() {
     countByStatus: jest.fn(),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Mock: WebhookDispatcherService
+// ---------------------------------------------------------------------------
+
+export function mockWebhookDispatcherService() {
+  return {
+    dispatch: jest.fn().mockResolvedValue(undefined),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Mock: NotificationService
+// ---------------------------------------------------------------------------
+
+export function mockNotificationService() {
+  return {
+    create: jest.fn().mockResolvedValue({ id: 'mock-notification-id' }),
+    findAll: jest.fn(),
+    findById: jest.fn(),
+    markSent: jest.fn(),
+    markFailed: jest.fn(),
+    resend: jest.fn(),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Mock: EmailTemplateRepository
+// ---------------------------------------------------------------------------
+
+export function mockEmailTemplateRepository() {
+  return {
+    findBySlug: jest.fn(),
+    render: jest.fn().mockResolvedValue({
+      subject: 'Test Subject',
+      html: '<p>Test HTML</p>',
+    }),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Mock: BullMQ Queue (email-notification)
+// ---------------------------------------------------------------------------
+
+export function mockEmailQueue() {
+  return {
+    add: jest.fn().mockResolvedValue({ id: 'mock-job-id' }),
+  };
+}

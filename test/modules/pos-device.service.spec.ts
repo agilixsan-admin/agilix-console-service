@@ -8,6 +8,7 @@ import { PosDeviceService } from '../../src/service/modules/pos-devices/pos-devi
 import { PosDeviceRepository } from '../../src/repositories/modules/pos-device.repository';
 import { AuditLogService } from '../../src/service/modules/audit-logs/audit-log.service';
 import { EventPublisherService } from '../../src/events/event-publisher.service';
+import { WebhookDispatcherService } from '../../src/service/modules/webhook-dispatcher.service';
 import { DeviceStatus } from '../../src/types/enums/device-status.enum';
 import { AuditAction } from '../../src/types/enums/audit-action.enum';
 import {
@@ -23,6 +24,7 @@ import {
   mockPosDeviceRepository,
   mockAuditLogService,
   mockEventPublisherService,
+  mockWebhookDispatcherService,
 } from '../config/functionUnitTest';
 
 describe('PosDeviceService', () => {
@@ -37,10 +39,8 @@ describe('PosDeviceService', () => {
         PosDeviceService,
         { provide: PosDeviceRepository, useFactory: mockPosDeviceRepository },
         { provide: AuditLogService, useFactory: mockAuditLogService },
-        {
-          provide: EventPublisherService,
-          useFactory: mockEventPublisherService,
-        },
+        { provide: EventPublisherService, useFactory: mockEventPublisherService },
+        { provide: WebhookDispatcherService, useFactory: mockWebhookDispatcherService },
       ],
     }).compile();
 
