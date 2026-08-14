@@ -44,3 +44,10 @@ export const cronConfig = registerAs('cron', () => ({
   reminderSchedule: process.env.CRON_INVOICE_REMINDER ?? '0 8 * * *',
   overdueSchedule: process.env.CRON_INVOICE_OVERDUE ?? '0 9 * * *',
 }));
+
+export const erpConfig = registerAs('erp', () => ({
+  webhookUrl: process.env.ERP_WEBHOOK_URL ?? '',
+  webhookApiKey: process.env.ERP_WEBHOOK_API_KEY ?? '',
+  // Timeout dalam ms untuk HTTP call ke ERP
+  webhookTimeout: parseInt(process.env.ERP_WEBHOOK_TIMEOUT ?? '5000', 10),
+}));

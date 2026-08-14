@@ -65,7 +65,7 @@ export class CreateTenantDto {
 
   @ApiProperty({
     description: 'Subscription plan type',
-    example: PlanType.PRO,
+    example: PlanType.MONTHLY,
     enum: PlanType,
   })
   @IsNotEmpty()

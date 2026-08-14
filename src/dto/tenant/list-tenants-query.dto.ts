@@ -62,7 +62,7 @@ export class ListTenantsQueryDto {
 
   @ApiPropertyOptional({
     description: 'Filter by plan type',
-    example: PlanType.PRO,
+    example: PlanType.MONTHLY,
     enum: PlanType,
   })
   @IsOptional()

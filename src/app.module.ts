@@ -16,6 +16,7 @@ import {
   smtpConfig,
   bcryptConfig,
   cronConfig,
+  erpConfig,
 } from './configs/config';
 import { validationSchema } from './configs/validation.schema';
 import { User } from './models/user.model';
@@ -60,6 +61,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         smtpConfig,
         bcryptConfig,
         cronConfig,
+        erpConfig,
       ],
       validationSchema,
       validationOptions: {

@@ -1,4 +1,10 @@
-import { IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { DeviceStatus } from '../../types/enums/device-status.enum';
@@ -24,4 +30,12 @@ export class UpdatePosDeviceDto {
   @IsEnum(DeviceStatus)
   @IsOptional()
   status?: DeviceStatus;
+
+  @ApiPropertyOptional({
+    description: 'Lock or unlock device',
+    example: true,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isLocked?: boolean;
 }

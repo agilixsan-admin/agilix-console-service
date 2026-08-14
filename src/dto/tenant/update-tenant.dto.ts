@@ -64,7 +64,7 @@ export class UpdateTenantDto {
 
   @ApiPropertyOptional({
     description: 'Updated plan type',
-    example: PlanType.ENTERPRISE,
+    example: PlanType.YEARLY,
     enum: PlanType,
   })
   @IsOptional()

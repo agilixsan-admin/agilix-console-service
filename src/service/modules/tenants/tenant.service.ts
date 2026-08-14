@@ -25,6 +25,7 @@ import {
   EMAIL_NOTIFICATION_JOB,
   EmailNotificationJobPayload,
 } from '../../../queues/jobs/email-notification.job';
+import { WebhookDispatcherService } from '../webhook-dispatcher.service';
 
 @Injectable()
 export class TenantService {
@@ -36,6 +37,7 @@ export class TenantService {
     private readonly eventPublisher: EventPublisherService,
     private readonly notificationService: NotificationService,
     private readonly emailTemplateRepository: EmailTemplateRepository,
+    private readonly webhookDispatcher: WebhookDispatcherService,
     @InjectQueue(EMAIL_NOTIFICATION_QUEUE)
     private readonly emailQueue: Queue,
   ) {}
@@ -93,6 +95,17 @@ export class TenantService {
       tenantId: tenant.id,
       businessName: tenant.businessName,
       status: tenant.status,
+    });
+
+    void this.webhookDispatcher.dispatch('tenant.created', {
+      tenantId: tenant.id,
+      businessName: tenant.businessName,
+      ownerName: tenant.ownerName,
+      ownerEmail: tenant.ownerEmail,
+      ownerPhone: tenant.ownerPhone,
+      planType: tenant.planType,
+      outletCount: tenant.outletCount,
+      expiryDate: tenant.expiryDate,
     });
 
     await this.sendWelcomeEmail(tenant);
@@ -217,6 +230,12 @@ export class TenantService {
       lockedBy: actorId,
     });
 
+    void this.webhookDispatcher.dispatch('tenant.locked', {
+      tenantId: id,
+      status: TenantStatus.LOCKED,
+      lockedBy: actorId,
+    });
+
     return updated;
   }
 
@@ -246,6 +265,12 @@ export class TenantService {
       unlockedBy: actorId,
     });
 
+    void this.webhookDispatcher.dispatch('tenant.unlocked', {
+      tenantId: id,
+      status: TenantStatus.ACTIVE,
+      unlockedBy: actorId,
+    });
+
     return updated;
   }
 
@@ -259,6 +284,11 @@ export class TenantService {
       action: AuditAction.TENANT_DELETED,
       targetType: 'Tenant',
       targetId: id,
+    });
+
+    void this.webhookDispatcher.dispatch('tenant.deleted', {
+      tenantId: id,
+      deletedBy: actorId,
     });
   }
 }

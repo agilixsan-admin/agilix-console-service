@@ -15,6 +15,7 @@ import { AuditLogService } from '../audit-logs/audit-log.service';
 import { EventPublisherService } from '../../../events/event-publisher.service';
 import { AuditAction } from '../../../types/enums/audit-action.enum';
 import { DeviceStatus } from '../../../types/enums/device-status.enum';
+import { WebhookDispatcherService } from '../webhook-dispatcher.service';
 
 @Injectable()
 export class PosDeviceService {
@@ -22,6 +23,7 @@ export class PosDeviceService {
     private readonly posDeviceRepository: PosDeviceRepository,
     private readonly auditLogService: AuditLogService,
     private readonly eventPublisher: EventPublisherService,
+    private readonly webhookDispatcher: WebhookDispatcherService,
   ) {}
 
   async findAll(
@@ -92,6 +94,7 @@ export class PosDeviceService {
     const updateData: Partial<PosDevice> = {};
     if (dto.deviceName !== undefined) updateData.deviceName = dto.deviceName;
     if (dto.status !== undefined) updateData.status = dto.status;
+    if (dto.isLocked !== undefined) updateData.isLocked = dto.isLocked;
 
     const updated = await this.posDeviceRepository.update(id, updateData);
 
@@ -103,6 +106,23 @@ export class PosDeviceService {
       targetId: id,
       metadata: { ...dto },
     });
+
+    // Dispatch webhook ke ERP kalau status lock berubah
+    if (dto.isLocked === true) {
+      void this.webhookDispatcher.dispatch('device.locked', {
+        deviceId: id,
+        tenantId: device.tenantId,
+        deviceCode: device.deviceCode,
+        lockedBy: actorId,
+      });
+    } else if (dto.isLocked === false) {
+      void this.webhookDispatcher.dispatch('device.unlocked', {
+        deviceId: id,
+        tenantId: device.tenantId,
+        deviceCode: device.deviceCode,
+        unlockedBy: actorId,
+      });
+    }
 
     return updated;
   }

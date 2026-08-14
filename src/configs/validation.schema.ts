@@ -60,4 +60,9 @@ export const validationSchema = Joi.object({
   // Cron Schedule — format cron expression "MENIT JAM * * *"
   CRON_INVOICE_REMINDER: Joi.string().default('0 8 * * *'),
   CRON_INVOICE_OVERDUE: Joi.string().default('0 9 * * *'),
+
+  // ERP Webhook — Console → ERP
+  ERP_WEBHOOK_URL: Joi.string().uri().allow('').default(''),
+  ERP_WEBHOOK_API_KEY: Joi.string().allow('').default(''),
+  ERP_WEBHOOK_TIMEOUT: Joi.number().integer().default(5000),
 });

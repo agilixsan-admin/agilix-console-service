@@ -6,6 +6,7 @@ import { PosDeviceService } from '../../service/modules/pos-devices/pos-device.s
 import { PosDeviceController } from '../../controllers/modules/pos-devices/pos-device.controller';
 import { AuditLogModule } from './audit-log.module';
 import { RealtimeModule } from './realtime.module';
+import { WebhookDispatcherService } from '../../service/modules/webhook-dispatcher.service';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { RealtimeModule } from './realtime.module';
     RealtimeModule,
   ],
   controllers: [PosDeviceController],
-  providers: [PosDeviceRepository, PosDeviceService],
+  providers: [PosDeviceRepository, PosDeviceService, WebhookDispatcherService],
   exports: [PosDeviceService, PosDeviceRepository],
 })
 export class PosDeviceModule {}

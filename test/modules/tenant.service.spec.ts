@@ -87,7 +87,7 @@ describe('TenantService', () => {
       businessName: TEST_BUSINESS_NAME,
       ownerName: 'John Doe',
       ownerEmail: 'owner@example.com',
-      planType: PlanType.PRO,
+      planType: PlanType.MONTHLY,
       outletCount: 3,
       expiryDate: FUTURE_EXPIRY_DATE.toISOString().split('T')[0],
     };
