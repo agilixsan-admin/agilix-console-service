@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PosDevice } from '../../../models/pos-device.model';
 import { PosDeviceRepository } from '../../../repositories/modules/pos-device.repository';
+import { TenantRepository } from '../../../repositories/modules/tenant.repository';
 import { PaginatedResult } from '../../../types/response.types';
 import { CreatePosDeviceDto } from '../../../dto/pos-device/create-pos-device.dto';
 import { UpdatePosDeviceDto } from '../../../dto/pos-device/update-pos-device.dto';
@@ -21,6 +22,7 @@ import { WebhookDispatcherService } from '../webhook-dispatcher.service';
 export class PosDeviceService {
   constructor(
     private readonly posDeviceRepository: PosDeviceRepository,
+    private readonly tenantRepository: TenantRepository,
     private readonly auditLogService: AuditLogService,
     private readonly eventPublisher: EventPublisherService,
     private readonly webhookDispatcher: WebhookDispatcherService,
@@ -108,19 +110,19 @@ export class PosDeviceService {
     });
 
     // Dispatch webhook ke ERP kalau status lock berubah
-    if (dto.isLocked === true) {
-      void this.webhookDispatcher.dispatch('device.locked', {
+    if (dto.isLocked === true || dto.isLocked === false) {
+      const tenant = await this.tenantRepository.findById(device.tenantId);
+      const target = {
+        url: tenant?.erpWebhookUrl ?? '',
+        apiKey: tenant?.erpWebhookKey ?? '',
+      };
+
+      const webhookEvent = dto.isLocked ? 'device.locked' : 'device.unlocked';
+      void this.webhookDispatcher.dispatch(target, webhookEvent, {
         deviceId: id,
         tenantId: device.tenantId,
         deviceCode: device.deviceCode,
-        lockedBy: actorId,
-      });
-    } else if (dto.isLocked === false) {
-      void this.webhookDispatcher.dispatch('device.unlocked', {
-        deviceId: id,
-        tenantId: device.tenantId,
-        deviceCode: device.deviceCode,
-        unlockedBy: actorId,
+        ...(dto.isLocked ? { lockedBy: actorId } : { unlockedBy: actorId }),
       });
     }
 

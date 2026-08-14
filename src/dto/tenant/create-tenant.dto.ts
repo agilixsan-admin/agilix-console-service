@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
   Matches,
   MaxLength,
   Min,
@@ -101,4 +102,26 @@ export class CreateTenantDto {
   @MaxLength(500)
   @Transform(({ value }) => trimStripHtml(value))
   notes?: string;
+
+  @ApiPropertyOptional({
+    description: 'ERP webhook URL — endpoint ERP tenant yang menerima event dari Console',
+    example: 'https://erp-tokoa.agilix.id/webhooks/console',
+    maxLength: 500,
+  })
+  @IsOptional()
+  @IsUrl({ protocols: ['http', 'https'], require_tld: false })
+  @MaxLength(500)
+  @Transform(({ value }) => trim(value))
+  erpWebhookUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'ERP webhook API key — key yang dipasang di .env ERP tenant untuk validasi',
+    example: 'a3f8c2e1d4b7f9a2c5e8b1d4f7a0c3e6',
+    maxLength: 255,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  @Transform(({ value }) => trim(value))
+  erpWebhookKey?: string;
 }

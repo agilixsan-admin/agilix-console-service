@@ -25,7 +25,7 @@ import {
   EMAIL_NOTIFICATION_JOB,
   EmailNotificationJobPayload,
 } from '../../../queues/jobs/email-notification.job';
-import { WebhookDispatcherService } from '../webhook-dispatcher.service';
+import { WebhookDispatcherService, WebhookTarget } from '../webhook-dispatcher.service';
 
 @Injectable()
 export class TenantService {
@@ -76,6 +76,8 @@ export class TenantService {
       status: TenantStatus.ACTIVE,
       expiryDate,
       notes: dto.notes ?? null,
+      erpWebhookUrl: dto.erpWebhookUrl ?? null,
+      erpWebhookKey: dto.erpWebhookKey ?? null,
       createdBy: actorId,
     });
 
@@ -97,16 +99,20 @@ export class TenantService {
       status: tenant.status,
     });
 
-    void this.webhookDispatcher.dispatch('tenant.created', {
-      tenantId: tenant.id,
-      businessName: tenant.businessName,
-      ownerName: tenant.ownerName,
-      ownerEmail: tenant.ownerEmail,
-      ownerPhone: tenant.ownerPhone,
-      planType: tenant.planType,
-      outletCount: tenant.outletCount,
-      expiryDate: tenant.expiryDate,
-    });
+    void this.webhookDispatcher.dispatch(
+      { url: tenant.erpWebhookUrl ?? '', apiKey: tenant.erpWebhookKey ?? '' },
+      'tenant.created',
+      {
+        tenantId: tenant.id,
+        businessName: tenant.businessName,
+        ownerName: tenant.ownerName,
+        ownerEmail: tenant.ownerEmail,
+        ownerPhone: tenant.ownerPhone,
+        planType: tenant.planType,
+        outletCount: tenant.outletCount,
+        expiryDate: tenant.expiryDate,
+      },
+    );
 
     await this.sendWelcomeEmail(tenant);
 
@@ -184,6 +190,10 @@ export class TenantService {
     if (dto.notes !== undefined) updateData.notes = dto.notes;
     if (dto.expiryDate !== undefined)
       updateData.expiryDate = new Date(dto.expiryDate);
+    if (dto.erpWebhookUrl !== undefined)
+      updateData.erpWebhookUrl = dto.erpWebhookUrl;
+    if (dto.erpWebhookKey !== undefined)
+      updateData.erpWebhookKey = dto.erpWebhookKey;
 
     const updated = await this.tenantRepository.update(id, updateData);
 
@@ -230,11 +240,15 @@ export class TenantService {
       lockedBy: actorId,
     });
 
-    void this.webhookDispatcher.dispatch('tenant.locked', {
-      tenantId: id,
-      status: TenantStatus.LOCKED,
-      lockedBy: actorId,
-    });
+    void this.webhookDispatcher.dispatch(
+      { url: tenant.erpWebhookUrl ?? '', apiKey: tenant.erpWebhookKey ?? '' },
+      'tenant.locked',
+      {
+        tenantId: id,
+        status: TenantStatus.LOCKED,
+        lockedBy: actorId,
+      },
+    );
 
     return updated;
   }
@@ -265,17 +279,21 @@ export class TenantService {
       unlockedBy: actorId,
     });
 
-    void this.webhookDispatcher.dispatch('tenant.unlocked', {
-      tenantId: id,
-      status: TenantStatus.ACTIVE,
-      unlockedBy: actorId,
-    });
+    void this.webhookDispatcher.dispatch(
+      { url: tenant.erpWebhookUrl ?? '', apiKey: tenant.erpWebhookKey ?? '' },
+      'tenant.unlocked',
+      {
+        tenantId: id,
+        status: TenantStatus.ACTIVE,
+        unlockedBy: actorId,
+      },
+    );
 
     return updated;
   }
 
   async remove(id: string, actorId: string): Promise<void> {
-    await this.findById(id);
+    const tenant = await this.findById(id);
     await this.tenantRepository.softDelete(id);
 
     await this.auditLogService.log({
@@ -286,9 +304,13 @@ export class TenantService {
       targetId: id,
     });
 
-    void this.webhookDispatcher.dispatch('tenant.deleted', {
-      tenantId: id,
-      deletedBy: actorId,
-    });
+    void this.webhookDispatcher.dispatch(
+      { url: tenant.erpWebhookUrl ?? '', apiKey: tenant.erpWebhookKey ?? '' },
+      'tenant.deleted',
+      {
+        tenantId: id,
+        deletedBy: actorId,
+      },
+    );
   }
 }

@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as https from 'https';
 import * as http from 'http';
 
@@ -17,38 +16,39 @@ export interface WebhookPayload {
   data: Record<string, unknown>;
 }
 
+export interface WebhookTarget {
+  url: string;
+  apiKey: string;
+}
+
 @Injectable()
 export class WebhookDispatcherService {
   private readonly logger = new Logger(WebhookDispatcherService.name);
-  private readonly webhookUrl: string;
-  private readonly apiKey: string;
-  private readonly timeout: number;
-
-  constructor(private readonly configService: ConfigService) {
-    this.webhookUrl = this.configService.get<string>('erp.webhookUrl') ?? '';
-    this.apiKey = this.configService.get<string>('erp.webhookApiKey') ?? '';
-    this.timeout = this.configService.get<number>('erp.webhookTimeout') ?? 5000;
-  }
+  private readonly defaultTimeout = 5000;
 
   /**
-   * Dispatch event ke ERP via HTTP POST.
+   * Dispatch event ke ERP tenant via HTTP POST.
    * Fire-and-forget — tidak throw error supaya tidak ganggu flow utama.
-   * Error di-log untuk observability.
+   *
+   * @param target  - URL dan API key milik tenant (dari DB)
+   * @param event   - Nama event
+   * @param data    - Payload data
    */
   async dispatch(
+    target: WebhookTarget,
     event: WebhookEvent,
     data: Record<string, unknown>,
   ): Promise<void> {
-    if (!this.webhookUrl) {
+    if (!target.url) {
       this.logger.debug(
-        `[Webhook] ERP_WEBHOOK_URL not configured, skipping event "${event}"`,
+        `[Webhook] erpWebhookUrl not set for this tenant, skipping event "${event}"`,
       );
       return;
     }
 
-    if (!this.apiKey) {
+    if (!target.apiKey) {
       this.logger.warn(
-        `[Webhook] ERP_WEBHOOK_API_KEY not configured, skipping event "${event}"`,
+        `[Webhook] erpWebhookKey not set for this tenant, skipping event "${event}"`,
       );
       return;
     }
@@ -60,21 +60,25 @@ export class WebhookDispatcherService {
     };
 
     try {
-      await this.sendRequest(payload);
-      this.logger.log(`[Webhook] ✅ Event "${event}" dispatched to ERP`);
+      await this.sendRequest(target, payload);
+      this.logger.log(
+        `[Webhook] ✅ Event "${event}" dispatched to ${target.url}`,
+      );
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      // Warning, bukan error fatal — jangan sampai gagalkan flow utama
       this.logger.warn(
-        `[Webhook] ⚠️  Failed to dispatch event "${event}" to ERP: ${msg}`,
+        `[Webhook] ⚠️  Failed to dispatch event "${event}" to ${target.url}: ${msg}`,
       );
     }
   }
 
-  private sendRequest(payload: WebhookPayload): Promise<void> {
+  private sendRequest(
+    target: WebhookTarget,
+    payload: WebhookPayload,
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       const body = JSON.stringify(payload);
-      const url = new URL(this.webhookUrl);
+      const url = new URL(target.url);
       const isHttps = url.protocol === 'https:';
       const transport = isHttps ? https : http;
 
@@ -86,31 +90,29 @@ export class WebhookDispatcherService {
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(body),
-          'X-Api-Key': this.apiKey,
+          'X-Api-Key': target.apiKey,
           'X-Source': 'agilix-console',
         },
-        timeout: this.timeout,
+        timeout: this.defaultTimeout,
       };
 
       const req = transport.request(options, (res) => {
-        // Consume response body supaya koneksi tidak hang
         res.resume();
-
         if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
           resolve();
         } else {
-          reject(new Error(`ERP returned HTTP ${res.statusCode ?? 'unknown'}`));
+          reject(
+            new Error(`ERP returned HTTP ${res.statusCode ?? 'unknown'}`),
+          );
         }
       });
 
       req.on('timeout', () => {
         req.destroy();
-        reject(new Error(`Request timed out after ${this.timeout}ms`));
+        reject(new Error(`Request timed out after ${this.defaultTimeout}ms`));
       });
 
-      req.on('error', (err) => {
-        reject(err);
-      });
+      req.on('error', (err) => reject(err));
 
       req.write(body);
       req.end();

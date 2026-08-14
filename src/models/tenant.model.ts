@@ -54,6 +54,12 @@ export class Tenant {
   @Column({ name: 'notes', type: 'text', nullable: true })
   notes: string | null;
 
+  @Column({ name: 'erp_webhook_url', type: 'varchar', length: 500, nullable: true })
+  erpWebhookUrl: string | null;
+
+  @Column({ name: 'erp_webhook_key', type: 'varchar', length: 255, nullable: true })
+  erpWebhookKey: string | null;
+
   @Column({ name: 'created_by', type: 'uuid' })
   createdBy: string;
 
