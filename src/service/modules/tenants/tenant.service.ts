@@ -25,7 +25,10 @@ import {
   EMAIL_NOTIFICATION_JOB,
   EmailNotificationJobPayload,
 } from '../../../queues/jobs/email-notification.job';
-import { WebhookDispatcherService, WebhookTarget } from '../webhook-dispatcher.service';
+import {
+  WebhookDispatcherService,
+  WebhookTarget,
+} from '../webhook-dispatcher.service';
 
 @Injectable()
 export class TenantService {

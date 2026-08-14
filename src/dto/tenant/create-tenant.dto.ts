@@ -104,7 +104,8 @@ export class CreateTenantDto {
   notes?: string;
 
   @ApiPropertyOptional({
-    description: 'ERP webhook URL — endpoint ERP tenant yang menerima event dari Console',
+    description:
+      'ERP webhook URL — endpoint ERP tenant yang menerima event dari Console',
     example: 'https://erp-tokoa.agilix.id/webhooks/console',
     maxLength: 500,
   })
@@ -115,7 +116,8 @@ export class CreateTenantDto {
   erpWebhookUrl?: string;
 
   @ApiPropertyOptional({
-    description: 'ERP webhook API key — key yang dipasang di .env ERP tenant untuk validasi',
+    description:
+      'ERP webhook API key — key yang dipasang di .env ERP tenant untuk validasi',
     example: 'a3f8c2e1d4b7f9a2c5e8b1d4f7a0c3e6',
     maxLength: 255,
   })

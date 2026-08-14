@@ -43,11 +43,23 @@ describe('TenantService', () => {
         TenantService,
         { provide: TenantRepository, useFactory: mockTenantRepository },
         { provide: AuditLogService, useFactory: mockAuditLogService },
-        { provide: EventPublisherService, useFactory: mockEventPublisherService },
+        {
+          provide: EventPublisherService,
+          useFactory: mockEventPublisherService,
+        },
         { provide: NotificationService, useFactory: mockNotificationService },
-        { provide: EmailTemplateRepository, useFactory: mockEmailTemplateRepository },
-        { provide: WebhookDispatcherService, useFactory: mockWebhookDispatcherService },
-        { provide: getQueueToken(EMAIL_NOTIFICATION_QUEUE), useFactory: mockEmailQueue },
+        {
+          provide: EmailTemplateRepository,
+          useFactory: mockEmailTemplateRepository,
+        },
+        {
+          provide: WebhookDispatcherService,
+          useFactory: mockWebhookDispatcherService,
+        },
+        {
+          provide: getQueueToken(EMAIL_NOTIFICATION_QUEUE),
+          useFactory: mockEmailQueue,
+        },
       ],
     }).compile();
 

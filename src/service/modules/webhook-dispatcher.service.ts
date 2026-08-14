@@ -101,9 +101,7 @@ export class WebhookDispatcherService {
         if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
           resolve();
         } else {
-          reject(
-            new Error(`ERP returned HTTP ${res.statusCode ?? 'unknown'}`),
-          );
+          reject(new Error(`ERP returned HTTP ${res.statusCode ?? 'unknown'}`));
         }
       });
 

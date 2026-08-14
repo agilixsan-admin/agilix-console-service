@@ -7,7 +7,6 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
 
   private readonly KEY_PREFIX = 'blacklist:rt:';
 
-  
   private refreshTtlSeconds = 7 * 24 * 60 * 60;
 
   constructor(private readonly configService: ConfigService) {}
@@ -29,7 +28,6 @@ export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
     this.client.disconnect();
   }
 
-  
   async blacklist(token: string): Promise<void> {
     const key = `${this.KEY_PREFIX}${token}`;
     await this.client.set(key, '1', 'EX', this.refreshTtlSeconds);

@@ -6,6 +6,7 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { PosDeviceService } from '../../src/service/modules/pos-devices/pos-device.service';
 import { PosDeviceRepository } from '../../src/repositories/modules/pos-device.repository';
+import { TenantRepository } from '../../src/repositories/modules/tenant.repository';
 import { AuditLogService } from '../../src/service/modules/audit-logs/audit-log.service';
 import { EventPublisherService } from '../../src/events/event-publisher.service';
 import { WebhookDispatcherService } from '../../src/service/modules/webhook-dispatcher.service';
@@ -22,6 +23,7 @@ import {
   buildPosDevice,
   buildPaginatedResult,
   mockPosDeviceRepository,
+  mockTenantRepository,
   mockAuditLogService,
   mockEventPublisherService,
   mockWebhookDispatcherService,
@@ -38,9 +40,16 @@ describe('PosDeviceService', () => {
       providers: [
         PosDeviceService,
         { provide: PosDeviceRepository, useFactory: mockPosDeviceRepository },
+        { provide: TenantRepository, useFactory: mockTenantRepository },
         { provide: AuditLogService, useFactory: mockAuditLogService },
-        { provide: EventPublisherService, useFactory: mockEventPublisherService },
-        { provide: WebhookDispatcherService, useFactory: mockWebhookDispatcherService },
+        {
+          provide: EventPublisherService,
+          useFactory: mockEventPublisherService,
+        },
+        {
+          provide: WebhookDispatcherService,
+          useFactory: mockWebhookDispatcherService,
+        },
       ],
     }).compile();
 
