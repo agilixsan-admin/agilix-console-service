@@ -22,12 +22,11 @@ async function checkDatabase(app: INestApplication): Promise<void> {
   try {
     const dataSource = app.get<DataSource>(getDataSourceToken());
     if (dataSource.isInitialized) {
-      const result = await dataSource.query('SELECT version()');
+      type PgVersionRow = { version: string };
+      const raw: unknown = await dataSource.query('SELECT version()');
+      const rows = raw as PgVersionRow[];
       const version =
-        (result as Array<{ version: string }>)[0]?.version
-          ?.split(' ')
-          .slice(0, 2)
-          .join(' ') ?? 'unknown';
+        rows[0]?.version?.split(' ').slice(0, 2).join(' ') ?? 'unknown';
       logger.log(`✅ PostgreSQL connected — ${version}`);
     } else {
       logger.warn('⚠️  PostgreSQL DataSource not initialized');
@@ -61,7 +60,9 @@ async function checkRedis(config: ConfigService): Promise<void> {
     if (pong === 'PONG') {
       logger.log(`✅ Redis connected — ${host}:${port}`);
     } else {
-      logger.warn(`⚠️  Redis ping returned unexpected response: ${pong}`);
+      logger.warn(
+        `⚠️  Redis ping returned unexpected response: ${String(pong)}`,
+      );
     }
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
