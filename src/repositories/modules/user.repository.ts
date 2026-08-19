@@ -141,7 +141,9 @@ export class UserRepository {
    */
   async create(data: Partial<User>): Promise<User> {
     const user = this.repo.create(data);
-    return this.repo.save(user);
+    const saved = await this.repo.save(user);
+    // Re-query dari DB supaya passwordHash (select: false) tidak ikut di response
+    return this.repo.findOneOrFail({ where: { id: saved.id } });
   }
 
   /**
