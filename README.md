@@ -195,7 +195,7 @@ Swagger UI tersedia saat aplikasi berjalan:
 http://localhost:3000/api/docs
 ```
 
-Spesifikasi API lengkap: [`doc/API_SPEC.md`](doc/API_SPEC.md)
+
 
 ---
 
@@ -208,7 +208,7 @@ Spesifikasi API lengkap: [`doc/API_SPEC.md`](doc/API_SPEC.md)
 | `SUPPORT` | Mengelola tenant dan perangkat POS |
 | `VIEWER` | Read-only |
 
-Detail permission: [`doc/RBAC_MATRIX.md`](doc/RBAC_MATRIX.md)
+
 
 ---
 
@@ -244,4 +244,4 @@ Variabel kritis:
 
 ## License
 
-UNLICENSED — Proprietary
+This project is licensed under the [BSD 2-Clause License](LICENSE).
