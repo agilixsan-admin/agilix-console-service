@@ -19,6 +19,10 @@ services:
       restart_policy:
         condition: on-failure
 
+  # Jalankan manual sekali untuk issue SSL certificate:
+  # docker run --rm -v certbot-www:/var/www/certbot -v certbot-certs:/etc/letsencrypt \
+  #   certbot/certbot certonly --webroot -w /var/www/certbot \
+  #   --email agilixsan@gmail.com -d console-api.agilix.id --agree-tos --no-eff-email
   certbot:
     image: certbot/certbot
     volumes:
@@ -57,14 +61,14 @@ services:
     volumes:
       - uploads:/app/src/uploads
     deploy:
-      replicas: 4
+      replicas: 2
       resources:
         limits:
           cpus: '0.50'
-          memory: 256M
+          memory: 192M
         reservations:
-          cpus: '0.15'
-          memory: 128M
+          cpus: '0.10'
+          memory: 96M
       restart_policy:
         condition: on-failure
         delay: 5s
@@ -85,8 +89,6 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    ports:
-      - '${DB_PORT:-5432}:5432'
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -98,7 +100,7 @@ services:
       resources:
         limits:
           cpus: '0.75'
-          memory: 768M
+          memory: 512M
         reservations:
           cpus: '0.25'
           memory: 256M
@@ -116,18 +118,18 @@ services:
       retries: 5
     command: >
       postgres
-        -c shared_buffers=192MB
-        -c effective_cache_size=512MB
-        -c work_mem=4MB
-        -c maintenance_work_mem=64MB
-        -c max_connections=50
+        -c shared_buffers=64MB
+        -c effective_cache_size=256MB
+        -c work_mem=2MB
+        -c maintenance_work_mem=32MB
+        -c max_connections=30
 
   redis:
     image: redis:7-alpine
     command: >
       redis-server
       --appendonly yes
-      --maxmemory 1gb
+      --maxmemory 256mb
       --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
@@ -135,8 +137,8 @@ services:
       replicas: 1
       resources:
         limits:
-          memory: 1.5G
-          cpus: '0.5'
+          memory: 384M
+          cpus: '0.25'
       restart_policy:
         condition: on-failure
 

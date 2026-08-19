@@ -41,7 +41,7 @@ export class EmailNotificationProcessor extends WorkerHost {
 
     try {
       await this.transporter.sendMail({
-        from: `"Agilix" <${this.configService.get<string>('smtp.from')}>`,
+        from: `AGILIX.id" <${this.configService.get<string>('smtp.from')}>`,
         to: recipient,
         subject,
         html: content,
