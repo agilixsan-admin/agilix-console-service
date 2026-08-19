@@ -1,98 +1,247 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Agilix Console Service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend service untuk platform SaaS Monitoring Tenant POS — mengelola autentikasi, tenant, invoice, perangkat POS, notifikasi, dan analitik dashboard.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Tech Stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+| Layer | Teknologi |
+|---|---|
+| Framework | NestJS + TypeScript |
+| Database | PostgreSQL 16 + TypeORM |
+| Cache / Queue | Redis 7 + BullMQ |
+| Auth | JWT (Access + Refresh Token) |
+| Authorization | RBAC (Role-Based Access Control) |
+| Realtime | Server-Sent Events (SSE) |
+| Container | Docker + Docker Compose |
+| Reverse Proxy | Nginx |
+| CI/CD | GitHub Actions |
 
-## Project setup
+---
 
-```bash
-$ npm install
+## Fitur Utama
+
+- **Authentication** — Login, logout, refresh token, token blacklist via Redis
+- **Authorization (RBAC)** — Role: `SUPER_ADMIN`, `FINANCE`, `SUPPORT`, `VIEWER`
+- **Tenant Management** — CRUD tenant, lock/unlock, integrasi ERP webhook
+- **Invoice Management** — Pembuatan, pembayaran, pembatalan invoice + PDF generation
+- **POS Device Monitoring** — Registrasi dan monitoring perangkat POS per tenant
+- **Audit Logging** — Immutable log untuk semua aksi kritis
+- **Notification System** — Notifikasi in-app + email via SMTP
+- **Server-Sent Events (SSE)** — Realtime event stream ke client
+- **Dashboard Analytics** — Statistik tenant, invoice, dan perangkat
+- **Background Jobs** — Invoice reminder & overdue check via BullMQ cron
+
+---
+
+## Struktur Proyek
+
+```
+src/
+├── configs/          # Konfigurasi app, database, validasi env
+├── controllers/      # HTTP request handler
+│   └── modules/
+├── service/          # Business logic
+│   └── modules/
+├── repositories/     # Database access layer (TypeORM)
+│   └── modules/
+├── routes/           # Route registration
+│   └── modules/
+├── models/           # TypeORM entity
+├── dto/              # Data Transfer Object + validasi
+├── guards/           # JWT Auth Guard, Roles Guard
+├── decorators/       # Custom decorator (CurrentUser, Roles)
+├── middlewares/      # HTTP logger, request context
+├── events/           # SSE / Realtime service
+├── queues/           # BullMQ job & processor
+├── migrations/       # TypeORM migration
+├── seeds/            # Database seeder
+├── types/            # Enum & shared types
+├── app.module.ts
+└── main.ts
+
+test/
+├── config/           # constants.ts, functionUnitTest.ts
+├── modules/          # Unit test per service
+└── integration/      # E2E integration test
 ```
 
-## Compile and run the project
+---
+
+## Prasyarat
+
+- Node.js >= 20
+- PostgreSQL 16
+- Redis 7
+- Docker & Docker Compose (opsional)
+
+---
+
+## Setup Lokal
+
+### 1. Install dependencies
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+### 2. Konfigurasi environment
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+Isi nilai berikut yang wajib diisi:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```env
+DB_PASSWORD=
+JWT_SECRET=                  # min 32 karakter, gunakan: openssl rand -hex 32
+JWT_REFRESH_SECRET=          # harus berbeda dari JWT_SECRET
+SEED_SUPER_ADMIN_PASSWORD=
+```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 3. Jalankan database & Redis via Docker
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker compose up postgres redis -d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 4. Jalankan migration
 
-## Resources
+```bash
+npm run migration:run
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### 5. Seed data awal (Super Admin)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm run seed
+```
 
-## Support
+### 6. Jalankan aplikasi
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# Development (watch mode)
+npm run start:dev
 
-## Stay in touch
+# Production build
+npm run build
+npm run start:prod
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Aplikasi berjalan di: `http://localhost:3000`
+
+---
+
+## Docker (Full Stack)
+
+Menjalankan seluruh stack (app + PostgreSQL + Redis) dalam satu perintah:
+
+```bash
+docker compose up -d
+```
+
+---
+
+## Database Migration
+
+```bash
+# Generate migration dari perubahan entity
+npm run migration:generate -- src/migrations/NamaMigration
+
+# Jalankan migration
+npm run migration:run
+
+# Revert migration terakhir
+npm run migration:revert
+
+# Lihat status migration
+npm run migration:show
+```
+
+---
+
+## Testing
+
+### Unit Test
+
+```bash
+# Jalankan semua unit test
+npm test
+
+# Jalankan satu file
+npx jest test/modules/user.service.spec.ts --no-coverage
+
+# Dengan coverage (target >= 80%)
+npm run test:cov
+```
+
+### Integration Test (membutuhkan Docker)
+
+```bash
+npm run test:integration
+```
+
+Script ini otomatis menjalankan Docker container test, menjalankan integration test, lalu mematikan container.
+
+---
+
+## API Documentation
+
+Swagger UI tersedia saat aplikasi berjalan:
+
+```
+http://localhost:3000/api/docs
+```
+
+Spesifikasi API lengkap: [`doc/API_SPEC.md`](doc/API_SPEC.md)
+
+---
+
+## RBAC
+
+| Role | Deskripsi |
+|---|---|
+| `SUPER_ADMIN` | Akses penuh ke semua fitur |
+| `FINANCE` | Mengelola invoice dan pembayaran |
+| `SUPPORT` | Mengelola tenant dan perangkat POS |
+| `VIEWER` | Read-only |
+
+Detail permission: [`doc/RBAC_MATRIX.md`](doc/RBAC_MATRIX.md)
+
+---
+
+## CI/CD
+
+Pipeline GitHub Actions (`.github/workflows/github-action.yml`) berjalan otomatis:
+
+| Trigger | Job |
+|---|---|
+| Push / PR ke `main` | Lint + Unit Test + Build |
+| Push ke `main` | Integration Test (PostgreSQL + Redis nyata) |
+| Push ke `main` (setelah test pass) | Deploy ke VPS via SCP |
+
+---
+
+## Environment Variables
+
+Lihat [`env.example`](.env.example) untuk daftar lengkap dengan penjelasan.
+
+Variabel kritis:
+
+| Variable | Keterangan |
+|---|---|
+| `JWT_SECRET` | Secret access token (min 32 char) |
+| `JWT_REFRESH_SECRET` | Secret refresh token (harus berbeda) |
+| `DB_*` | Konfigurasi PostgreSQL |
+| `REDIS_HOST / REDIS_PORT` | Konfigurasi Redis |
+| `SMTP_*` | Konfigurasi email |
+| `ERP_WEBHOOK_URL` | Endpoint ERP untuk event push |
+
+---
+
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED — Proprietary
