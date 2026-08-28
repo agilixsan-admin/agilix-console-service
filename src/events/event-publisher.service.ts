@@ -4,11 +4,7 @@ import { RealtimeService } from './realtime.service';
 @Injectable()
 export class EventPublisherService {
   constructor(private readonly realtimeService: RealtimeService) {}
-
-  // ---------------------------------------------------------------------------
-  // Tenant Events — EVENT_CATALOG.md
-  // ---------------------------------------------------------------------------
-
+  
   publishTenantCreated(payload: {
     tenantId: string;
     businessName: string;
@@ -61,10 +57,6 @@ export class EventPublisherService {
       data: payload,
     });
   }
-
-  // ---------------------------------------------------------------------------
-  // Invoice Events — EVENT_CATALOG.md
-  // ---------------------------------------------------------------------------
 
   publishInvoiceGenerated(payload: {
     invoiceId: string;
