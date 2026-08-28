@@ -69,13 +69,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         abortEarly: false,
       },
     }),
-
-    // -------------------------------------------------------------------------
-    // Rate Limiting — IMPLEMENTATION_ROADMAP.md Phase 10 § Security
-    //
-    // Global throttle: 100 requests per 60 seconds per IP.
-    // Auth endpoints menggunakan throttle lebih ketat via @Throttle() decorator.
-    // -------------------------------------------------------------------------
+    
     ThrottlerModule.forRoot([
       {
         name: 'global',
