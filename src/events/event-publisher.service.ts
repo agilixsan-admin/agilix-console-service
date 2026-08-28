@@ -111,10 +111,6 @@ export class EventPublisherService {
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // POS Device Events — EVENT_CATALOG.md
-  // ---------------------------------------------------------------------------
-
   publishDeviceRegistered(payload: {
     deviceId: string;
     tenantId: string;
