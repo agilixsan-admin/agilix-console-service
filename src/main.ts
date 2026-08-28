@@ -11,13 +11,6 @@ import { AppModule } from './app.module';
 import { GLOBAL_PREFIX } from './configs/route';
 
 const logger = new Logger('Bootstrap');
-
-/**
- * Cek koneksi PostgreSQL via TypeORM DataSource yang sudah diinisialisasi
- * oleh NestJS. Kalau DataSource belum initialized, berarti koneksi gagal
- * saat module load dan NestJS sudah throw error sebelum ini dipanggil.
- * Method ini log status untuk konfirmasi.
- */
 async function checkDatabase(app: INestApplication): Promise<void> {
   try {
     const dataSource = app.get<DataSource>(getDataSourceToken());
@@ -37,10 +30,6 @@ async function checkDatabase(app: INestApplication): Promise<void> {
   }
 }
 
-/**
- * Cek koneksi Redis dengan membuat koneksi sementara (ping/quit).
- * Tidak menggunakan koneksi BullMQ yang ada supaya tidak interferensi.
- */
 async function checkRedis(config: ConfigService): Promise<void> {
   const host = config.get<string>('redis.host') ?? 'localhost';
   const port = config.get<number>('redis.port') ?? 6379;
@@ -69,15 +58,10 @@ async function checkRedis(config: ConfigService): Promise<void> {
     logger.error(`❌ Redis connection failed (${host}:${port}): ${msg}`);
   } finally {
     await client.quit().catch(() => {
-      /* suppress quit errors */
     });
   }
 }
 
-/**
- * Cek koneksi SMTP dengan nodemailer verify().
- * Tidak mengirim email — hanya verifikasi socket dan auth.
- */
 async function checkSmtp(config: ConfigService): Promise<void> {
   const host = config.get<string>('smtp.host') ?? '';
   const port = config.get<number>('smtp.port') ?? 587;
@@ -104,10 +88,7 @@ async function checkSmtp(config: ConfigService): Promise<void> {
   }
 }
 
-/**
- * Tampilkan ringkasan konfigurasi environment saat startup.
- * Tidak menampilkan nilai sensitif (password, secret).
- */
+
 function logEnvironmentInfo(config: ConfigService, port: number): void {
   const nodeEnv =
     config.get<string>('server.nodeEnv') ??
@@ -139,46 +120,14 @@ function logEnvironmentInfo(config: ConfigService, port: number): void {
   logger.log(`  JWT EXP      : ${jwtExp}`);
   logger.log('─────────────────────────────────────────');
 }
-
-/**
- * Bootstrap
- *
- * Entry point aplikasi.
- * Konfigurasi global diterapkan di sini sebelum server mulai listen.
- *
- * Global setup:
- *   - setGlobalPrefix    — semua endpoint berada di bawah /api/v1
- *   - ValidationPipe     — aktifkan validasi DTO secara global
- *   - enableCors         — izinkan cross-origin request (dikonfigurasi dari env)
- *   - helmet             — HTTP security headers
- */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    // Matikan NestJS default logger sementara — kita pakai logger manual
-    // di bawah agar urutan log lebih terkontrol.
     bufferLogs: true,
   });
 
-  // Aktifkan NestJS built-in logger — flush semua buffered log dari module init
   app.useLogger(new Logger());
-
-  // ---------------------------------------------------------------------------
-  // Helmet — HTTP Security Headers
-  // Dipasang sebelum route agar berlaku untuk semua request.
-  // IMPLEMENTATION_ROADMAP.md Phase 10 § Security
-  // ---------------------------------------------------------------------------
   app.use(helmet());
-
-  // ---------------------------------------------------------------------------
-  // Global API Prefix
-  // API_SPEC.md § API Versioning: base URL /api/v1
-  // ---------------------------------------------------------------------------
   app.setGlobalPrefix(GLOBAL_PREFIX);
-
-  // ---------------------------------------------------------------------------
-  // Global Validation Pipe
-  // AGENTS.md § DTO Rules: validasi wajib di semua endpoint
-  // ---------------------------------------------------------------------------
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -189,10 +138,6 @@ async function bootstrap() {
       },
     }),
   );
-
-  // ---------------------------------------------------------------------------
-  // CORS
-  // ---------------------------------------------------------------------------
   const isDevEnv = (process.env.NODE_ENV ?? 'development') === 'development';
   const corsOrigin = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
@@ -207,10 +152,6 @@ async function bootstrap() {
     credentials: corsOrigin !== '*' && corsOrigin !== false,
   });
 
-  // ---------------------------------------------------------------------------
-  // Swagger API Documentation
-  // Available at: /api-docs
-  // ---------------------------------------------------------------------------
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Agilix Console Service API')
     .setDescription('SaaS Monitoring Tenant POS - API Documentation')
@@ -238,24 +179,15 @@ async function bootstrap() {
     },
   });
 
-  // ---------------------------------------------------------------------------
-  // Start server
-  // ---------------------------------------------------------------------------
+  
   const config = app.get(ConfigService);
   const port =
     config.get<number>('server.port') ??
     parseInt(process.env.PORT ?? '3000', 10);
 
-  // Log environment info sebelum listen
   logEnvironmentInfo(config, port);
 
   await app.listen(port);
-
-  // ---------------------------------------------------------------------------
-  // Post-startup diagnostic checks
-  // Dijalankan SETELAH app.listen() agar semua module (TypeORM, BullMQ) sudah
-  // selesai diinisialisasi. Hasil check ditampilkan ke log untuk observability.
-  // ---------------------------------------------------------------------------
   logger.log('🔍 Running startup diagnostics...');
   await Promise.all([
     checkDatabase(app),
