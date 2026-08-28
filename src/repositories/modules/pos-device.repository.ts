@@ -5,37 +5,19 @@ import { PosDevice } from '../../models/pos-device.model';
 import { DeviceStatus } from '../../types/enums/device-status.enum';
 import { PaginatedResult } from '../../types/response.types';
 
-/**
- * FindAllPosDevicesOptions — query parameters for the device list query.
- */
 export interface FindAllPosDevicesOptions {
   page: number;
   limit: number;
   tenantId?: string;
   status?: DeviceStatus;
 }
-
-/**
- * PosDeviceRepository
- *
- * Satu-satunya layer yang diizinkan mengakses tabel `pos_devices`.
- *
- * Referensi:
- *   - ARCHITECTURE_RULES.md  → Repository Responsibilities
- *   - DATABASE_RULES.md      → Pagination, Sorting, Index
- *   - DOMAIN_MODEL.md        → Entity: PosDevice
- */
 @Injectable()
 export class PosDeviceRepository {
   constructor(
     @InjectRepository(PosDevice)
     private readonly repo: Repository<PosDevice>,
   ) {}
-
-  // ---------------------------------------------------------------------------
-  // Read
-  // ---------------------------------------------------------------------------
-
+  
   async findById(id: string): Promise<PosDevice | null> {
     return this.repo.findOne({ where: { id } });
   }
@@ -75,10 +57,6 @@ export class PosDeviceRepository {
   async countByStatus(status: DeviceStatus): Promise<number> {
     return this.repo.count({ where: { status } });
   }
-
-  // ---------------------------------------------------------------------------
-  // Write
-  // ---------------------------------------------------------------------------
 
   async create(data: Partial<PosDevice>): Promise<PosDevice> {
     const device = this.repo.create(data);
