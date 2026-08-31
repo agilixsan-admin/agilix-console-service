@@ -1,9 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import * as https from 'https';
 import * as http from 'http';
 
 export type WebhookEvent =
   | 'tenant.created'
+  | 'tenant.updated'
   | 'tenant.locked'
   | 'tenant.unlocked'
   | 'tenant.deleted'
@@ -12,6 +14,7 @@ export type WebhookEvent =
 
 export interface WebhookPayload {
   event: WebhookEvent;
+  eventId: string;
   timestamp: string;
   data: Record<string, unknown>;
 }
@@ -55,6 +58,7 @@ export class WebhookDispatcherService {
 
     const payload: WebhookPayload = {
       event,
+      eventId: randomUUID(),
       timestamp: new Date().toISOString(),
       data,
     };
@@ -90,6 +94,7 @@ export class WebhookDispatcherService {
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(body),
+          'x-agilix-api-key': target.apiKey,
           'X-Api-Key': target.apiKey,
           'X-Source': 'agilix-console',
         },
@@ -97,12 +102,22 @@ export class WebhookDispatcherService {
       };
 
       const req = transport.request(options, (res) => {
-        res.resume();
-        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-          resolve();
-        } else {
-          reject(new Error(`ERP returned HTTP ${res.statusCode ?? 'unknown'}`));
-        }
+        let resData = '';
+        res.on('data', (chunk) => {
+          resData += chunk;
+        });
+        res.on('end', () => {
+          if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+            resolve();
+          } else {
+            const detail = resData ? ` - Details: ${resData}` : '';
+            reject(
+              new Error(
+                `ERP returned HTTP ${res.statusCode ?? 'unknown'}${detail}`,
+              ),
+            );
+          }
+        });
       });
 
       req.on('timeout', () => {

@@ -211,6 +211,20 @@ export class TenantService {
       businessName: updated.businessName,
     });
 
+    void this.webhookDispatcher.dispatch(
+      { url: updated.erpWebhookUrl ?? '', apiKey: updated.erpWebhookKey ?? '' },
+      'tenant.updated',
+      {
+        tenantId: id,
+        businessName: updated.businessName,
+        ownerName: updated.ownerName,
+        ownerEmail: updated.ownerEmail,
+        ownerPhone: updated.ownerPhone,
+        planType: updated.planType,
+        expiryDate: updated.expiryDate,
+      },
+    );
+
     return updated;
   }
 
