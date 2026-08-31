@@ -43,9 +43,9 @@ export const SUPPORT_ADMIN_FULL_NAME = 'Support Administrator';
 /** Password plaintext untuk dipakai di test create/login */
 export const TEST_PASSWORD_PLAIN = 'TestPassword@123';
 
-/** bcrypt hash dari TEST_PASSWORD_PLAIN (rounds=12) — pre-computed untuk tes yang tidak perlu hash ulang */
+/** bcrypt hash dari TEST_PASSWORD_PLAIN (rounds=10) — pre-computed untuk tes yang tidak perlu hash ulang */
 export const TEST_PASSWORD_HASH =
-  '$2b$12$examplehashvaluethatisnotrealandisusedfortestingonly123456';
+  '$2b$10$pWxcxAMbwdlC13UxKUJ6Y.BJ2BEhIZ29m0zqMeomNjwV9bYr6bgQW';
 
 export const DEFAULT_USER_ROLE = UserRole.FINANCE_ADMIN;
 

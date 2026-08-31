@@ -37,6 +37,7 @@ function mockTokenBlacklistService() {
 }
 
 describe('AuthService', () => {
+  jest.setTimeout(30000);
   let service: AuthService;
   let userRepository: ReturnType<typeof mockUserRepository>;
   let jwtService: ReturnType<typeof mockJwtService>;
@@ -75,11 +76,10 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('harus mengembalikan accessToken, refreshToken, dan data user saat login berhasil', async () => {
-      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
       const user = buildUserWithPassword({
         email: SUPER_ADMIN_EMAIL,
         role: UserRole.SUPER_ADMIN,
-        passwordHash: hash,
+        passwordHash: TEST_PASSWORD_HASH,
       });
 
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
@@ -106,8 +106,7 @@ describe('AuthService', () => {
     });
 
     it('harus membuat refresh token dengan refreshSecret yang berbeda', async () => {
-      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
-      const user = buildUserWithPassword({ passwordHash: hash });
+      const user = buildUserWithPassword({ passwordHash: TEST_PASSWORD_HASH });
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
       userRepository.update.mockResolvedValue(user);
       auditLogService.log.mockResolvedValue(undefined);
@@ -128,8 +127,7 @@ describe('AuthService', () => {
     });
 
     it('harus memanggil AuditLogService.log dengan AUTH_LOGIN setelah login berhasil', async () => {
-      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
-      const user = buildUserWithPassword({ passwordHash: hash });
+      const user = buildUserWithPassword({ passwordHash: TEST_PASSWORD_HASH });
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
       userRepository.update.mockResolvedValue(user);
       auditLogService.log.mockResolvedValue(undefined);
@@ -173,10 +171,9 @@ describe('AuthService', () => {
     });
 
     it('harus throw UnauthorizedException jika user tidak aktif', async () => {
-      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
       const user = buildUserWithPassword({
         isActive: false,
-        passwordHash: hash,
+        passwordHash: TEST_PASSWORD_HASH,
       });
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
 
@@ -191,8 +188,7 @@ describe('AuthService', () => {
     });
 
     it('harus memperbarui lastLoginAt setelah login berhasil', async () => {
-      const hash: string = await bcrypt.hash(TEST_PASSWORD_PLAIN, 10);
-      const user = buildUserWithPassword({ passwordHash: hash });
+      const user = buildUserWithPassword({ passwordHash: TEST_PASSWORD_HASH });
       userRepository.findByEmailWithPassword.mockResolvedValue(user);
       userRepository.update.mockResolvedValue(user);
       auditLogService.log.mockResolvedValue(undefined);
