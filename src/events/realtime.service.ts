@@ -4,6 +4,7 @@ import { tap } from 'rxjs/operators';
 
 export interface SseEvent {
   event: string;
+  eventId: string;
   version: number;
   timestamp: string;
   data: Record<string, unknown>;

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { RealtimeService } from './realtime.service';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'tenant.created',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -24,6 +26,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'tenant.updated',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -38,6 +41,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'tenant.locked',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -52,6 +56,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'tenant.unlocked',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -66,6 +71,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'invoice.generated',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -79,6 +85,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'invoice.overdue',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -93,6 +100,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'payment.received',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -105,6 +113,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'invoice.cancelled',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -117,6 +126,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'device.registered',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -130,6 +140,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'device.online',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -143,6 +154,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'device.offline',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -155,6 +167,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'notification.sent',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
@@ -167,6 +180,7 @@ export class EventPublisherService {
   }): void {
     this.realtimeService.publish({
       event: 'notification.failed',
+      eventId: randomUUID(),
       version: 1,
       timestamp: new Date().toISOString(),
       data: payload,
