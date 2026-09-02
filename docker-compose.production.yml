@@ -1,5 +1,14 @@
 version: '3.8'
 
+networks:
+  infra_net:
+    external: true
+
+volumes:
+  certbot-www:
+  certbot-certs:
+  uploads:
+
 services:
   nginx:
     image: nginx:alpine
@@ -10,6 +19,8 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - certbot-www:/var/www/certbot:ro
       - certbot-certs:/etc/letsencrypt:ro
+    networks:
+      - infra_net
     deploy:
       replicas: 1
       resources:
@@ -19,20 +30,18 @@ services:
       restart_policy:
         condition: on-failure
 
-  # Jalankan manual sekali untuk issue SSL certificate:
-  # docker run --rm -v certbot-www:/var/www/certbot -v certbot-certs:/etc/letsencrypt \
-  #   certbot/certbot certonly --webroot -w /var/www/certbot \
-  #   --email agilixsan@gmail.com -d console-api.agilix.id --agree-tos --no-eff-email
   certbot:
     image: certbot/certbot
     volumes:
       - certbot-www:/var/www/certbot
       - certbot-certs:/etc/letsencrypt
+    networks:
+      - infra_net
     deploy:
       replicas: 0
-    entrypoint: /bin/sh -c "certbot certonly --webroot -w /var/www/certbot --email agilixsan@gmail.com -d console-api.agilix.id --agree-tos --no-eff-email"
+    entrypoint: /bin/sh -c "certbot certonly --webroot -w /var/www/certbot --email agilixsan@gmail.com -d api-invoice.agilix.id --agree-tos --no-eff-email"
 
-  app:
+  app-console:
     image: agilix-service:v1.0.0
     expose:
       - '3000'
@@ -42,8 +51,8 @@ services:
       NODE_ENV: ${NODE_ENV}
       PORT: ${PORT}
       HOST: ${HOST}
-      DB_HOST: postgres
-      DB_PORT: 5432
+      DB_HOST: pgbouncer
+      DB_PORT: 6432
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
@@ -51,8 +60,9 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
-      REDIS_HOST: redis
+      REDIS_HOST: agilix-redis
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
       SMTP_USER: ${SMTP_USER}
@@ -60,6 +70,8 @@ services:
       SMTP_FROM: ${SMTP_FROM}
     volumes:
       - uploads:/app/src/uploads
+    networks:
+      - infra_net
     deploy:
       replicas: 2
       resources:
@@ -86,65 +98,3 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
-
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    deploy:
-      replicas: 1
-      resources:
-        limits:
-          cpus: '0.75'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      placement:
-        constraints:
-          - node.role == manager
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME} -d ${DB_NAME}']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    command: >
-      postgres
-        -c shared_buffers=64MB
-        -c effective_cache_size=256MB
-        -c work_mem=2MB
-        -c maintenance_work_mem=32MB
-        -c max_connections=30
-
-  redis:
-    image: redis:7-alpine
-    command: >
-      redis-server
-      --appendonly yes
-      --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
-    volumes:
-      - redis_data:/data
-    deploy:
-      replicas: 1
-      resources:
-        limits:
-          memory: 384M
-          cpus: '0.25'
-      restart_policy:
-        condition: on-failure
-
-volumes:
-  pgdata:
-  redis_data:
-  uploads:
-  certbot-www:
-  certbot-certs:
