@@ -17,7 +17,7 @@ export class PosDeviceRepository {
     @InjectRepository(PosDevice)
     private readonly repo: Repository<PosDevice>,
   ) {}
-  
+
   async findById(id: string): Promise<PosDevice | null> {
     return this.repo.findOne({ where: { id } });
   }

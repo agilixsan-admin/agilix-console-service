@@ -74,6 +74,13 @@ jobs:
         run: npx jest --config ./test/jest-integration.json --runInBand --forceExit
         env:
           NODE_ENV: test
+          # DB_* wajib ada untuk ConfigModule validation (validationSchema Joi)
+          DB_HOST: localhost
+          DB_PORT: 5435
+          DB_USERNAME: agilix_test
+          DB_PASSWORD: agilix_test_password
+          DB_NAME: agilix_console_test
+          # TEST_DB_* dipakai oleh integration-setup.ts untuk override koneksi
           TEST_DB_HOST: localhost
           TEST_DB_PORT: 5435
           TEST_DB_USERNAME: agilix_test

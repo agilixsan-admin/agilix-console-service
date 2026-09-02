@@ -19,7 +19,7 @@ export class UserRepository {
     @InjectRepository(User)
     private readonly repo: Repository<User>,
   ) {}
-  
+
   async findById(id: string): Promise<User | null> {
     return this.repo.findOne({ where: { id } });
   }
@@ -72,7 +72,7 @@ export class UserRepository {
       totalPages: Math.ceil(total / limit),
     };
   }
-  
+
   async create(data: Partial<User>): Promise<User> {
     const user = this.repo.create(data);
     const saved = await this.repo.save(user);

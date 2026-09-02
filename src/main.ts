@@ -57,8 +57,7 @@ async function checkRedis(config: ConfigService): Promise<void> {
     const msg = error instanceof Error ? error.message : String(error);
     logger.error(`❌ Redis connection failed (${host}:${port}): ${msg}`);
   } finally {
-    await client.quit().catch(() => {
-    });
+    await client.quit().catch(() => {});
   }
 }
 
@@ -87,7 +86,6 @@ async function checkSmtp(config: ConfigService): Promise<void> {
     transporter.close();
   }
 }
-
 
 function logEnvironmentInfo(config: ConfigService, port: number): void {
   const nodeEnv =
@@ -179,7 +177,6 @@ async function bootstrap() {
     },
   });
 
-  
   const config = app.get(ConfigService);
   const port =
     config.get<number>('server.port') ??

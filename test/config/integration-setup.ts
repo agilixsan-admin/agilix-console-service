@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import request from 'supertest';
+import { Server } from 'net';
 import { AppModule } from '../../src/app.module';
 import { User } from '../../src/models/user.model';
 import { UserRole } from '../../src/types/enums/user-role.enum';
@@ -119,17 +120,23 @@ export async function seedTestSuperAdmin(): Promise<User> {
  * Login dan kembalikan access token.
  * Dipakai di test yang butuh auth.
  */
+interface LoginResponseBody {
+  data: {
+    accessToken: string;
+  };
+}
+
 export async function loginAs(
   appInstance: INestApplication,
   email: string,
   password: string,
 ): Promise<string> {
-  const res = await request(appInstance.getHttpServer())
+  const res = await request(appInstance.getHttpServer() as Server)
     .post(`/${GLOBAL_PREFIX}/auth/login`)
     .send({ email, password })
     .expect(200);
 
-  return res.body.data.accessToken as string;
+  return (res.body as LoginResponseBody).data.accessToken;
 }
 
 /**

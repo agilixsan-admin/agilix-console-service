@@ -1,7 +1,6 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import * as bcrypt from 'bcrypt';
 import { AuthService } from '../../src/service/modules/auth/auth.service';
 import { UserRepository } from '../../src/repositories/modules/user.repository';
 import { AuditLogService } from '../../src/service/modules/audit-logs/audit-log.service';

@@ -69,7 +69,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         abortEarly: false,
       },
     }),
-    
+
     ThrottlerModule.forRoot([
       {
         name: 'global',

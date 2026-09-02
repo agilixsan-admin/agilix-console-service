@@ -1,7 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiResponse, PaginatedResult } from '../types/response.types';
 export class BaseController {
-
   protected success<T>(
     data: T,
     message = 'Operation successful',

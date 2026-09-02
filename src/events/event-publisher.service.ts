@@ -5,7 +5,7 @@ import { RealtimeService } from './realtime.service';
 @Injectable()
 export class EventPublisherService {
   constructor(private readonly realtimeService: RealtimeService) {}
-  
+
   publishTenantCreated(payload: {
     tenantId: string;
     businessName: string;
