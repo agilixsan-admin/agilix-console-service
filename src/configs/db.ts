@@ -50,7 +50,6 @@ export const AppDataSource = new DataSource({
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   // ─── PgBouncer compatibility ────────────────────────────────────────────
   extra: {
-    options: '-c statement_timeout=30000',
     max: parseInt(process.env.DB_POOL_MAX ?? '5', 10),
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,

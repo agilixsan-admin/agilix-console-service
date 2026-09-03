@@ -146,16 +146,11 @@ const IS_TEST_ENV = process.env.NODE_ENV === 'test';
           ? { rejectUnauthorized: false }
           : false,
         // ─── PgBouncer compatibility ──────────────────────────────────────
-        // PgBouncer transaction pooling tidak support prepared statements.
-        // TypeORM harus kirim query sebagai simple protocol, bukan extended.
+        // PgBouncer transaction pooling tidak support startup parameters.
+        // Pool size kecil — PgBouncer yang handle pooling ke PostgreSQL.
         extra: {
-          // Nonaktifkan prepared statements — wajib untuk transaction pooling
-          options: '-c statement_timeout=30000',
-          // Pool size kecil — PgBouncer yang handle pooling ke PostgreSQL
           max: config.get<number>('database.poolMax') ?? 5,
-          // Tutup idle connection setelah 30 detik
           idleTimeoutMillis: 30_000,
-          // Timeout saat mendapatkan connection dari pool
           connectionTimeoutMillis: 5_000,
         },
       }),

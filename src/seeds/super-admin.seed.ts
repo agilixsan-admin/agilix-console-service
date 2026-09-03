@@ -37,7 +37,4 @@ export async function seedSuperAdmin(dataSource: DataSource): Promise<void> {
 
   console.log('✓ SUPER_ADMIN user created successfully');
   console.log(`  Email: ${adminEmail}`);
-  console.log(
-    '  ⚠️  Password was read from SEED_SUPER_ADMIN_PASSWORD env variable',
-  );
 }
