@@ -19,6 +19,7 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { BaseController } from '../../base-controller';
 import { InvoiceService } from '../../../service/modules/invoices/invoice.service';
 import { CreateInvoiceDto } from '../../../dto/invoice/create-invoice.dto';
@@ -79,8 +80,10 @@ export class InvoiceController extends BaseController {
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 409, description: 'Duplicate invoice' })
+  @SwaggerResponse({ status: 429, description: 'Too many requests' })
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.FINANCE_ADMIN)
+  @Throttle({ strict: { ttl: 60_000, limit: 5 } })
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateInvoiceDto, @CurrentUser() actor: User) {
     const invoice = await this.invoiceService.create(dto, actor.id);
@@ -147,8 +150,10 @@ export class InvoiceController extends BaseController {
   @SwaggerResponse({ status: 401, description: 'Unauthorized' })
   @SwaggerResponse({ status: 403, description: 'Forbidden' })
   @SwaggerResponse({ status: 404, description: 'Invoice not found' })
+  @SwaggerResponse({ status: 429, description: 'Too many requests' })
   @Post(':id/send-reminder')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
+  @Throttle({ strict: { ttl: 60_000, limit: 5 } })
   @HttpCode(HttpStatus.OK)
   async sendReminder(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,

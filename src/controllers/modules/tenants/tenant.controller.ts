@@ -31,6 +31,7 @@ import { Roles } from '../../../decorators/roles.decorator';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { User } from '../../../models/user.model';
 import { UserRole } from '../../../types/enums/user-role.enum';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Tenants')
 @ApiBearerAuth()
@@ -83,8 +84,10 @@ export class TenantController extends BaseController {
   @ApiBody({ type: CreateTenantDto })
   @SwaggerResponse({ status: 201, description: 'Tenant created successfully' })
   @SwaggerResponse({ status: 409, description: 'Email already exists' })
+  @SwaggerResponse({ status: 429, description: 'Too many requests' })
   @Post()
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPPORT_ADMIN)
+  @Throttle({ strict: { ttl: 60_000, limit: 5 } })
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateTenantDto, @CurrentUser() actor: User) {
     const tenant = await this.tenantService.create(dto, actor.id);

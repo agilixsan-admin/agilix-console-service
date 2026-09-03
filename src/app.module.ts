@@ -7,7 +7,9 @@ import {
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import { AppThrottlerGuard } from './guards/app-throttler.guard';
 import {
   serverConfig,
   databaseConfig,
@@ -48,6 +50,9 @@ import { QueuesModule } from './queues/queues.module';
 import { DashboardModule } from './routes/modules/dashboard.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
+// Evaluasi di top-level — tersedia saat @Module decorator di-parse
+const IS_TEST_ENV = process.env.NODE_ENV === 'test';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -70,18 +75,41 @@ import { ScheduleModule } from '@nestjs/schedule';
       },
     }),
 
-    ThrottlerModule.forRoot([
-      {
-        name: 'global',
-        ttl: 60_000,
-        limit: 100,
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        return {
+          ...(IS_TEST_ENV
+            ? {}
+            : {
+                storage: new ThrottlerStorageRedisService({
+                  host: config.get<string>('redis.host') ?? 'localhost',
+                  port: config.get<number>('redis.port') ?? 6379,
+                  password: config.get<string>('redis.password') || undefined,
+                  retryStrategy: (times: number) => Math.min(times * 100, 3000),
+                }),
+              }),
+          throttlers: [
+            {
+              name: 'global',
+              ttl: 60_000,
+              limit: IS_TEST_ENV ? 10_000 : 120,
+            },
+            {
+              name: 'auth',
+              ttl: 60_000,
+              limit: IS_TEST_ENV ? 10_000 : 10,
+            },
+            {
+              name: 'strict',
+              ttl: 60_000,
+              limit: IS_TEST_ENV ? 10_000 : 5,
+            },
+          ],
+        };
       },
-      {
-        name: 'auth',
-        ttl: 60_000,
-        limit: 10,
-      },
-    ]),
+    }),
 
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -137,7 +165,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     // Individual endpoints can override with @Throttle() or @SkipThrottle().
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: AppThrottlerGuard,
     },
   ],
 })

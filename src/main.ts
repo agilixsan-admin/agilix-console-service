@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import helmet from 'helmet';
+import * as express from 'express';
 import Redis from 'ioredis';
 import * as nodemailer from 'nodemailer';
 import { AppModule } from './app.module';
@@ -125,6 +126,35 @@ async function bootstrap() {
 
   app.useLogger(new Logger());
   app.use(helmet());
+
+  // ─── Body size limit ───────────────────────────────────────────────────────
+  // Cegah payload flood / large body attack.
+  // Default Express body parser tidak membatasi ukuran body.
+  // Limit: 1mb untuk JSON, 500kb untuk URL-encoded form.
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ limit: '500kb', extended: true }));
+
+  // ─── Request timeout ───────────────────────────────────────────────────────
+  // Cegah slow loris attack — koneksi yang sengaja dikirim sangat lambat
+  // untuk menghabiskan connection pool.
+  // Timeout 30 detik: request yang tidak selesai dalam 30s akan di-drop.
+  app.use(
+    (
+      req: import('express').Request,
+      res: import('express').Response,
+      next: import('express').NextFunction,
+    ) => {
+      res.setTimeout(30_000, () => {
+        res.status(408).json({
+          statusCode: 408,
+          message: 'Request Timeout',
+          error: 'Request took too long to complete',
+        });
+      });
+      next();
+    },
+  );
+
   app.setGlobalPrefix(GLOBAL_PREFIX);
   app.useGlobalPipes(
     new ValidationPipe({

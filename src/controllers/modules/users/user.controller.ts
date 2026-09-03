@@ -20,6 +20,7 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { BaseController } from '../../base-controller';
 import { UserService } from '../../../service/modules/users/user.service';
 import { CreateUserDto } from '../../../dto/user/create-user.dto';
@@ -73,7 +74,9 @@ export class UserController extends BaseController {
   @ApiBody({ type: CreateUserDto })
   @SwaggerResponse({ status: 201, description: 'User created successfully' })
   @SwaggerResponse({ status: 409, description: 'Email already exists' })
+  @SwaggerResponse({ status: 429, description: 'Too many requests' })
   @Post()
+  @Throttle({ strict: { ttl: 60_000, limit: 5 } })
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() dto: CreateUserDto,

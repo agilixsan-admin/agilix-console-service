@@ -69,7 +69,9 @@ export class AuthController extends BaseController {
     status: 401,
     description: 'Invalid or expired refresh token',
   })
+  @SwaggerResponse({ status: 429, description: 'Too many requests' })
   @Post('refresh')
+  @Throttle({ auth: { ttl: 60_000, limit: 10 } })
   @HttpCode(HttpStatus.OK)
   async refresh(
     @Body() dto: RefreshTokenDto,
