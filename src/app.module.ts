@@ -48,6 +48,7 @@ import { PosDeviceModule } from './routes/modules/pos-device.module';
 import { NotificationModule } from './routes/modules/notification.module';
 import { QueuesModule } from './queues/queues.module';
 import { DashboardModule } from './routes/modules/dashboard.module';
+import { HealthModule } from './routes/modules/health.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 // Evaluasi di top-level — tersedia saat @Module decorator di-parse
@@ -166,6 +167,7 @@ const IS_TEST_ENV = process.env.NODE_ENV === 'test';
     NotificationModule,
     QueuesModule,
     DashboardModule,
+    HealthModule,
     ScheduleModule.forRoot(),
   ],
   providers: [
