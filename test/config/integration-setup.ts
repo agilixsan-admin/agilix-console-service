@@ -13,9 +13,9 @@ import { seedEmailTemplates } from '../../src/seeds/email-template.seed';
 
 // ---------------------------------------------------------------------------
 // Environment override untuk integration test
-// Harus di-set sebelum AppModule di-load
+// NODE_ENV=test di-set via Jest setupFiles (test/config/jest-setup-env.ts)
+// agar terbaca sebelum app.module.ts di-import
 // ---------------------------------------------------------------------------
-process.env.NODE_ENV = 'test';
 process.env.DB_HOST = process.env.TEST_DB_HOST ?? 'localhost';
 process.env.DB_PORT = process.env.TEST_DB_PORT ?? '5435';
 process.env.DB_USERNAME = process.env.TEST_DB_USERNAME ?? 'agilix_test';
