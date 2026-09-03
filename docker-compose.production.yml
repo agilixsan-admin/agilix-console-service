@@ -40,28 +40,30 @@ services:
     entrypoint: /bin/sh -c "certbot certonly --webroot -w /var/www/certbot --email agilixsan@gmail.com -d api-invoice.agilix.id --agree-tos --no-eff-email"
 
   app-console:
-    image: agilix-service:v1.0.0
+    image: agilix-service:v1.0.2
     expose:
       - '3000'
+    env_file:
+      - .env
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
-      HOST: ${HOST:-0.0.0.0}
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
+      HOST: ${HOST}
       DB_HOST: pgbouncer
       DB_PORT: '6432'
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
-      DB_POOL_MAX: ${DB_POOL_MAX:-5}
+      DB_POOL_MAX: ${DB_POOL_MAX}
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-30m}
-      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN}
       REDIS_HOST: agilix-redis
       REDIS_PORT: '6379'
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_PORT: ${SMTP_PORT}
       SMTP_USERNAME: ${SMTP_USERNAME}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       SMTP_FROM: ${SMTP_FROM}
