@@ -68,7 +68,7 @@ services:
       redis-server
       --requirepass ${REDIS_PASSWORD}
       --maxmemory 1gb
-      --maxmemory-policy allkeys-lru
+      --maxmemory-policy noeviction
     volumes:
       - redis_data:/data
     ports:

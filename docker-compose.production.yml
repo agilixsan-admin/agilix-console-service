@@ -76,14 +76,14 @@ services:
     networks:
       - infra_net
     deploy:
-      replicas: 2
+      replicas: 3
       resources:
         limits:
           cpus: '0.50'
-          memory: 192M
+          memory: 256M
         reservations:
-          cpus: '0.10'
-          memory: 96M
+          cpus: '0.15'
+          memory: 128M
       restart_policy:
         condition: on-failure
         delay: 5s
