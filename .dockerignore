@@ -8,8 +8,7 @@ yarn-error.log*
 dist
 build
 
-# Test
-test
+# Test artifacts only (keep source files for build)
 coverage
 .nyc_output
 
