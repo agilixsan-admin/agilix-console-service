@@ -15,6 +15,12 @@ export class AppThrottlerGuard extends ThrottlerGuard {
     if (process.env.NODE_ENV === 'test') {
       return true;
     }
+
+    const request = context.switchToHttp().getRequest<{ path: string }>();
+    if (request.path === '/api/v1/health') {
+      return true;
+    }
+
     return super.shouldSkip(context);
   }
 }
