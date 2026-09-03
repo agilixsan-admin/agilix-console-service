@@ -24,6 +24,7 @@ export const validationSchema = Joi.object({
   DB_PASSWORD: Joi.string().allow('').required(),
   DB_NAME: Joi.string().required(),
   DB_SSL: Joi.boolean().default(false),
+  DB_POOL_MAX: Joi.number().integer().min(1).max(20).default(5),
 
   // JWT — wajib tersedia, minimum 32 karakter untuk keamanan
   JWT_SECRET: Joi.string().min(32).required().messages({

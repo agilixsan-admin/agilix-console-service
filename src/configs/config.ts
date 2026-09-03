@@ -15,7 +15,9 @@ export const databaseConfig = registerAs('database', () => ({
   name: process.env.DB_NAME ?? 'agilix_console',
   ssl: process.env.DB_SSL === 'true',
   logging: process.env.DB_LOGGING === 'true',
-  synchronize: false, // ← WAJIB false — DATABASE_RULES.md § Migration Policy
+  synchronize: false,
+  // Pool size kecil — PgBouncer yang handle pooling ke PostgreSQL
+  poolMax: parseInt(process.env.DB_POOL_MAX ?? '5', 10),
 }));
 export const jwtConfig = registerAs('jwt', () => ({
   secret: process.env.JWT_SECRET,
