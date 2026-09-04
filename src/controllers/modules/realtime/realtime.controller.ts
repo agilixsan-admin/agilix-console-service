@@ -13,6 +13,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { Observable, map } from 'rxjs';
+import { SkipThrottle } from '@nestjs/throttler';
 import { RealtimeService, SseEvent } from '../../../events/realtime.service';
 import { JwtAuthGuard } from '../../../guards/jwt-auth.guard';
 import { RolesGuard } from '../../../guards/roles.guard';
@@ -39,6 +40,7 @@ export class RealtimeController {
     UserRole.SUPPORT_ADMIN,
     UserRole.VIEWER,
   )
+  @SkipThrottle()
   @Sse()
   @HttpCode(HttpStatus.OK)
   stream(): Observable<MessageEvent> {
