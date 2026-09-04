@@ -42,16 +42,19 @@ export class WebhookDispatcherService {
     event: WebhookEvent,
     data: Record<string, unknown>,
   ): Promise<void> {
+    const safeEvent = event.replace(/[\r\n\t]/g, ' ').substring(0, 100);
+    const safeUrl = target.url.replace(/[\r\n\t]/g, ' ').substring(0, 500);
+
     if (!target.url) {
       this.logger.debug(
-        `[Webhook] erpWebhookUrl not set for this tenant, skipping event "${event}"`,
+        `[Webhook] erpWebhookUrl not set for this tenant, skipping event "${safeEvent}"`,
       );
       return;
     }
 
     if (!target.apiKey) {
       this.logger.warn(
-        `[Webhook] erpWebhookKey not set for this tenant, skipping event "${event}"`,
+        `[Webhook] erpWebhookKey not set for this tenant, skipping event "${safeEvent}"`,
       );
       return;
     }
@@ -66,12 +69,12 @@ export class WebhookDispatcherService {
     try {
       await this.sendRequest(target, payload);
       this.logger.log(
-        `[Webhook] ✅ Event "${event}" dispatched to ${target.url}`,
+        `[Webhook] Event "${safeEvent}" dispatched to ${safeUrl}`,
       );
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       this.logger.warn(
-        `[Webhook] ⚠️  Failed to dispatch event "${event}" to ${target.url}: ${msg}`,
+        `[Webhook] Failed to dispatch event "${safeEvent}" to ${safeUrl}: ${msg}`,
       );
     }
   }

@@ -5,17 +5,22 @@ type AuthenticatedRequest = Request & {
   user?: { id?: string; email?: string; role?: string };
 };
 
+function sanitizeLog(value: string): string {
+  return value.replace(/[\r\n\t]/g, ' ').substring(0, 500);
+}
+
 @Injectable()
 export class HttpLoggerMiddleware implements NestMiddleware {
   private readonly logger = new Logger('HTTP');
 
   use(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
     const { method, originalUrl } = req;
+    const safeUrl = sanitizeLog(originalUrl);
     const ip =
       (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ??
       req.socket?.remoteAddress ??
       '-';
-    const userAgent = req.get('user-agent') || '-';
+    const userAgent = sanitizeLog(req.get('user-agent') || '-');
     const contentLength = req.get('content-length') || '0';
     const startTime = Date.now();
 
@@ -27,7 +32,7 @@ export class HttpLoggerMiddleware implements NestMiddleware {
       const resContentLength = res.get('content-length') || '-';
 
       const message =
-        `${method} ${originalUrl} | ` +
+        `${method} ${safeUrl} | ` +
         `status=${statusCode} | ` +
         `time=${responseTime}ms | ` +
         `user=${userId} role=${userRole} | ` +

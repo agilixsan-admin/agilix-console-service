@@ -35,8 +35,9 @@ export class RealtimeService implements OnModuleDestroy {
   }
 
   publish(event: SseEvent): void {
+    const safeEvent = event.event.replace(/[\r\n\t]/g, ' ').substring(0, 100);
     this.logger.log(
-      `Publishing event: ${event.event} → ${this.subscriberCount} subscriber(s)`,
+      `Publishing event: ${safeEvent} -> ${this.subscriberCount} subscriber(s)`,
     );
     this.subject.next(event);
   }
