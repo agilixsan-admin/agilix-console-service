@@ -22,6 +22,7 @@ import { UserRole } from '../../../types/enums/user-role.enum';
 
 @ApiTags('Events')
 @ApiBearerAuth()
+@SkipThrottle({ default: true, global: true, auth: true, strict: true })
 @Controller('events')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class RealtimeController {
@@ -40,7 +41,7 @@ export class RealtimeController {
     UserRole.SUPPORT_ADMIN,
     UserRole.VIEWER,
   )
-  @SkipThrottle()
+  @SkipThrottle({ default: true, global: true, auth: true, strict: true })
   @Sse()
   @HttpCode(HttpStatus.OK)
   stream(): Observable<MessageEvent> {

@@ -16,8 +16,14 @@ export class AppThrottlerGuard extends ThrottlerGuard {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<{ path: string }>();
-    if (request.path === '/api/v1/health') {
+    const request = context.switchToHttp().getRequest<{
+      path?: string;
+      originalUrl?: string;
+      url?: string;
+    }>();
+
+    const path = request?.path || request?.originalUrl || request?.url || '';
+    if (path.includes('/events') || path.includes('/health')) {
       return true;
     }
 
