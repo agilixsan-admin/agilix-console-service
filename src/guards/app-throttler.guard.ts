@@ -1,5 +1,6 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
-import { ThrottlerGuard, ThrottlerOptions } from '@nestjs/throttler';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerRequest } from '@nestjs/throttler/dist/throttler.guard.interface';
 
 /**
  * Custom ThrottlerGuard:
@@ -33,15 +34,9 @@ export class AppThrottlerGuard extends ThrottlerGuard {
     return super.shouldSkip(context);
   }
 
-  protected override async handleRequest(requestProps: {
-    context: ExecutionContext;
-    limit: number;
-    ttl: number;
-    throttler: ThrottlerOptions;
-    blockDuration: number;
-    getTracker: any;
-    generateKey: any;
-  }): Promise<boolean> {
+  protected override async handleRequest(
+    requestProps: ThrottlerRequest,
+  ): Promise<boolean> {
     const { context, throttler } = requestProps;
     const handler = context.getHandler();
     const classRef = context.getClass();
@@ -52,10 +47,9 @@ export class AppThrottlerGuard extends ThrottlerGuard {
       throttler.name !== 'default' &&
       throttler.name !== 'global'
     ) {
-      const specificLimit = this.reflector.getAllAndOverride(
-        `THROTTLER:LIMIT${throttler.name}`,
-        [handler, classRef],
-      );
+      const specificLimit = this.reflector.getAllAndOverride<
+        number | undefined
+      >(`THROTTLER:LIMIT${throttler.name}`, [handler, classRef]);
       // Jika endpoint tidak memiliki dekorator @Throttle khusus untuk throttler ini, skip
       if (specificLimit === undefined) {
         return true;
