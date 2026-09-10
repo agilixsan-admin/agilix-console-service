@@ -39,7 +39,7 @@ export class AuditLogRepository {
   }
 
   async findById(id: string): Promise<AuditLog | null> {
-    return this.repo.findOne({ where: { id } });
+    return this.repo.findOne({ where: { id }, relations: ['actor'] });
   }
 
   async findAll(
@@ -51,6 +51,7 @@ export class AuditLogRepository {
 
     const qb = this.repo
       .createQueryBuilder('log')
+      .leftJoinAndSelect('log.actor', 'actor')
       .orderBy('log.createdAt', 'DESC')
       .take(limit)
       .skip(offset);
