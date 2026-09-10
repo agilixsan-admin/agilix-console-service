@@ -33,7 +33,7 @@ export class NotificationRepository {
   ) {}
 
   async findById(id: string): Promise<Notification | null> {
-    return this.repo.findOne({ where: { id } });
+    return this.repo.findOne({ where: { id }, relations: ['tenant'] });
   }
 
   async findAll(
@@ -45,6 +45,7 @@ export class NotificationRepository {
 
     const qb = this.repo
       .createQueryBuilder('notification')
+      .leftJoinAndSelect('notification.tenant', 'tenant')
       .orderBy('notification.createdAt', 'DESC')
       .take(limit)
       .skip(offset);
