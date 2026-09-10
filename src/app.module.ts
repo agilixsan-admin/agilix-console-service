@@ -95,7 +95,7 @@ const IS_TEST_ENV = process.env.NODE_ENV === 'test';
             {
               name: 'global',
               ttl: 60_000,
-              limit: IS_TEST_ENV ? 10_000 : 120,
+              limit: IS_TEST_ENV ? 10_000 : 300,
             },
             {
               name: 'auth',
@@ -105,7 +105,7 @@ const IS_TEST_ENV = process.env.NODE_ENV === 'test';
             {
               name: 'strict',
               ttl: 60_000,
-              limit: IS_TEST_ENV ? 10_000 : 5,
+              limit: IS_TEST_ENV ? 10_000 : 10,
             },
           ],
         };
