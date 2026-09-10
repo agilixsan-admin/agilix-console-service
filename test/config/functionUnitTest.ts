@@ -104,6 +104,7 @@ export function mockUserRepository() {
     findById: jest.fn(),
     findByEmail: jest.fn(),
     findByEmailWithPassword: jest.fn(),
+    findByIdWithPassword: jest.fn(),
     findAll: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),

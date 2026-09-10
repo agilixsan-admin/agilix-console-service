@@ -37,6 +37,15 @@ export class UserRepository {
       .getOne();
   }
 
+  async findByIdWithPassword(id: string): Promise<User | null> {
+    return this.repo
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .where('user.id = :id', { id })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
+  }
+
   async findAll(options: FindAllUsersOptions): Promise<PaginatedResult<User>> {
     const page = options.page > 0 ? options.page : 1;
     const limit = Math.min(options.limit > 0 ? options.limit : 10, 100);

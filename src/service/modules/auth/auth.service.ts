@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -7,6 +12,7 @@ import { AuditLogService } from '../audit-logs/audit-log.service';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { LoginDto } from '../../../dto/auth/login.dto';
 import { RefreshTokenDto } from '../../../dto/auth/refresh-token.dto';
+import { ResetPasswordDto } from '../../../dto/auth/reset-password.dto';
 import { User } from '../../../models/user.model';
 import { AuditAction } from '../../../types/enums/audit-action.enum';
 import { JwtPayload } from './jwt.strategy';
@@ -153,6 +159,49 @@ export class AuthService {
       targetId: actorId,
       ipAddress: ipAddress ?? null,
       userAgent: userAgent ?? null,
+    });
+  }
+
+  async resetPassword(
+    userId: string,
+    dto: ResetPasswordDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<void> {
+    const user = await this.userRepository.findByIdWithPassword(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.passwordHash,
+    );
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    const isSamePassword = await bcrypt.compare(
+      dto.newPassword,
+      user.passwordHash,
+    );
+    if (isSamePassword) {
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.userRepository.update(user.id, { passwordHash });
+
+    await this.auditLogService.log({
+      actorId: user.id,
+      action: AuditAction.AUTH_PASSWORD_RESET,
+      targetType: 'User',
+      targetId: user.id,
+      ipAddress: ipAddress ?? null,
+      userAgent: userAgent ?? null,
+      metadata: { email: user.email },
     });
   }
 

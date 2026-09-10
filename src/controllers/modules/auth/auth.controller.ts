@@ -25,6 +25,7 @@ import {
 } from '../../../service/modules/auth/auth.service';
 import { LoginDto } from '../../../dto/auth/login.dto';
 import { RefreshTokenDto } from '../../../dto/auth/refresh-token.dto';
+import { ResetPasswordDto } from '../../../dto/auth/reset-password.dto';
 import { JwtAuthGuard } from '../../../guards/jwt-auth.guard';
 import { CurrentUser } from '../../../decorators/current-user.decorator';
 import { User } from '../../../models/user.model';
@@ -78,6 +79,33 @@ export class AuthController extends BaseController {
   ): Promise<ApiResponse<RefreshResponse>> {
     const result = await this.authService.refresh(dto);
     return this.success(result, 'Token refreshed successfully');
+  }
+
+  @ApiOperation({ summary: 'Reset / ganti password user yang sedang login' })
+  @ApiBearerAuth()
+  @ApiBody({ type: ResetPasswordDto })
+  @SwaggerResponse({ status: 200, description: 'Password reset successfully' })
+  @SwaggerResponse({
+    status: 400,
+    description: 'Current password incorrect or new password validation failed',
+  })
+  @SwaggerResponse({ status: 401, description: 'Unauthorized' })
+  @Post('reset-password')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ auth: { ttl: 60_000, limit: 10 } })
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(
+    @CurrentUser() actor: User,
+    @Body() dto: ResetPasswordDto,
+    @Req() req: Request & { ipAddress?: string; userAgent?: string },
+  ): Promise<ApiResponse<void>> {
+    await this.authService.resetPassword(
+      actor.id,
+      dto,
+      req.ipAddress,
+      req.userAgent,
+    );
+    return this.noContent('Password reset successfully');
   }
 
   @ApiOperation({ summary: 'Logout dan blacklist refresh token' })

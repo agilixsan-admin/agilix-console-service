@@ -340,6 +340,95 @@ describe('AuthService', () => {
   });
 
   // -------------------------------------------------------------------------
+  // resetPassword
+  // -------------------------------------------------------------------------
+
+  describe('resetPassword', () => {
+    it('harus berhasil mereset password, mengupdate hash, dan mencatat audit log', async () => {
+      const user = buildUserWithPassword({
+        passwordHash: TEST_PASSWORD_HASH,
+      });
+      userRepository.findByIdWithPassword.mockResolvedValue(user);
+      userRepository.update.mockResolvedValue(user);
+      auditLogService.log.mockResolvedValue(undefined);
+
+      await service.resetPassword(
+        TEST_USER_ID,
+        {
+          currentPassword: TEST_PASSWORD_PLAIN,
+          newPassword: 'BrandNewPassword123!',
+        },
+        '127.0.0.1',
+        'Mozilla/5.0',
+      );
+
+      expect(userRepository.findByIdWithPassword).toHaveBeenCalledWith(
+        TEST_USER_ID,
+      );
+      expect(userRepository.update).toHaveBeenCalledWith(
+        user.id,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        expect.objectContaining({ passwordHash: expect.any(String) }),
+      );
+      expect(auditLogService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: AuditAction.AUTH_PASSWORD_RESET,
+          actorId: user.id,
+          targetType: 'User',
+          targetId: user.id,
+          ipAddress: '127.0.0.1',
+          userAgent: 'Mozilla/5.0',
+        }),
+      );
+    });
+
+    it('harus throw NotFoundException jika user tidak ditemukan', async () => {
+      userRepository.findByIdWithPassword.mockResolvedValue(null);
+
+      await expect(
+        service.resetPassword(TEST_USER_ID_NONEXISTENT, {
+          currentPassword: TEST_PASSWORD_PLAIN,
+          newPassword: 'BrandNewPassword123!',
+        }),
+      ).rejects.toThrow();
+
+      expect(userRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('harus throw BadRequestException jika currentPassword salah', async () => {
+      const user = buildUserWithPassword({
+        passwordHash: TEST_PASSWORD_HASH,
+      });
+      userRepository.findByIdWithPassword.mockResolvedValue(user);
+
+      await expect(
+        service.resetPassword(TEST_USER_ID, {
+          currentPassword: 'WrongCurrentPassword123!',
+          newPassword: 'BrandNewPassword123!',
+        }),
+      ).rejects.toThrow();
+
+      expect(userRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('harus throw BadRequestException jika newPassword sama dengan currentPassword', async () => {
+      const user = buildUserWithPassword({
+        passwordHash: TEST_PASSWORD_HASH,
+      });
+      userRepository.findByIdWithPassword.mockResolvedValue(user);
+
+      await expect(
+        service.resetPassword(TEST_USER_ID, {
+          currentPassword: TEST_PASSWORD_PLAIN,
+          newPassword: TEST_PASSWORD_PLAIN,
+        }),
+      ).rejects.toThrow();
+
+      expect(userRepository.update).not.toHaveBeenCalled();
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // getProfile
   // -------------------------------------------------------------------------
 
