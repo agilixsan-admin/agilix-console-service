@@ -21,11 +21,14 @@ export class InvoiceRepository {
   ) {}
 
   async findById(id: string): Promise<Invoice | null> {
-    return this.repo.findOne({ where: { id } });
+    return this.repo.findOne({ where: { id }, relations: ['tenant'] });
   }
 
   async findByInvoiceNumber(invoiceNumber: string): Promise<Invoice | null> {
-    return this.repo.findOne({ where: { invoiceNumber } });
+    return this.repo.findOne({
+      where: { invoiceNumber },
+      relations: ['tenant'],
+    });
   }
 
   async findAll(
@@ -37,6 +40,7 @@ export class InvoiceRepository {
 
     const qb = this.repo
       .createQueryBuilder('invoice')
+      .leftJoinAndSelect('invoice.tenant', 'tenant')
       .orderBy('invoice.createdAt', 'DESC')
       .take(limit)
       .skip(offset);
