@@ -49,7 +49,6 @@ describe('InvoiceService', () => {
   let auditLogService: ReturnType<typeof mockAuditLogService>;
   let eventPublisher: ReturnType<typeof mockEventPublisherService>;
   let emailQueue: ReturnType<typeof mockEmailQueue>;
-  let reminderQueue: ReturnType<typeof mockEmailQueue>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -87,7 +86,6 @@ describe('InvoiceService', () => {
     invoicePdfService = module.get(InvoicePdfService);
     auditLogService = module.get(AuditLogService);
     eventPublisher = module.get(EventPublisherService);
-    reminderQueue = module.get(getQueueToken(INVOICE_REMINDER_QUEUE));
     emailQueue = module.get(getQueueToken(EMAIL_NOTIFICATION_QUEUE));
   });
 
@@ -243,12 +241,12 @@ describe('InvoiceService', () => {
         EMAIL_NOTIFICATION_JOB,
         expect.objectContaining({
           recipient: tenant.ownerEmail,
-          attachments: expect.arrayContaining([
+          attachments: [
             expect.objectContaining({
               filename: `${paid.invoiceNumber}-LUNAS.pdf`,
               contentType: 'application/pdf',
             }),
-          ]),
+          ],
         }),
         expect.any(Object),
       );
