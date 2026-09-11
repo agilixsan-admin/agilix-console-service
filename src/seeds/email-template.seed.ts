@@ -244,6 +244,87 @@ const templates = [
 </body>
 </html>`,
   },
+  {
+    slug: 'invoice-paid',
+    subject: 'Bukti Pembayaran: Tagihan {{invoiceNumber}} Telah Lunas',
+    template: `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Bukti Pembayaran Tagihan Agilix</title>
+  <style type="text/css">
+    @import url("https://fonts.googleapis.com/css?family=Nunito+Sans:400,700&display=swap");
+    body { width:100%!important; height:100%; margin:0; -webkit-text-size-adjust:none; background-color:#F2F4F6; font-family:"Nunito Sans",Helvetica,Arial,sans-serif; }
+    a { color:#1A3A5C; } td { word-break:break-word; }
+    h1 { margin-top:0; color:#27AE60; font-size:22px; font-weight:bold; }
+    h2 { margin-top:0; color:#1A3A5C; font-size:16px; font-weight:bold; }
+    p { margin:.4em 0 1.1875em; font-size:14px; line-height:1.625; color:#51545E; }
+    .email-wrapper { width:100%; margin:0; padding:0; background-color:#F2F4F6; }
+    .email-body_inner { width:570px; margin:0 auto; padding:0; background-color:#FFFFFF; border-radius:8px; overflow:hidden; }
+    .email-footer { width:570px; margin:0 auto; padding:20px 0; text-align:center; }
+    .email-footer p { color:#A8AAAF; font-size:12px; }
+    .masthead { background-color:#1A3A5C; padding:30px 45px; text-align:center; }
+    .masthead-title { color:#FFFFFF; font-size:24px; font-weight:bold; letter-spacing:2px; margin:0; }
+    .masthead-subtitle { color:#A8C4E0; font-size:12px; margin:4px 0 0 0; }
+    .alert-bar { background-color:#27AE60; padding:12px 45px; text-align:center; }
+    .alert-bar p { color:#FFFFFF; font-weight:bold; font-size:14px; margin:0; }
+    .content-cell { padding:45px; }
+    .divider { border:none; border-top:1px solid #EAEAEC; margin:24px 0; }
+    .info-table { width:100%; border-collapse:collapse; margin:20px 0; }
+    .info-table td { padding:10px 14px; font-size:14px; color:#51545E; }
+    .info-table tr:nth-child(odd) td { background-color:#F8F9FB; }
+    .info-table .label { font-weight:bold; color:#1A3A5C; width:40%; }
+    .badge-paid { display:inline-block; background-color:#E8F8F0; color:#27AE60; font-size:12px; font-weight:bold; padding:4px 12px; border-radius:20px; }
+    .amount-box { background-color:#E8F8F0; border-left:4px solid #27AE60; padding:16px 20px; border-radius:4px; margin:20px 0; }
+    .amount-box p { margin:0; color:#1E8449; font-size:14px; }
+    .amount-box .amount { font-size:24px; font-weight:bold; color:#1E8449; margin:4px 0 0 0; }
+    .footer-bar { background-color:#27AE60; height:6px; }
+    @media only screen and (max-width:600px) { .email-body_inner,.email-footer { width:100%!important; } .content-cell { padding:24px!important; } }
+  </style>
+</head>
+<body style="margin:0;padding:0;">
+  <table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 0;">
+      <table class="email-body_inner" width="570" cellpadding="0" cellspacing="0">
+        <tr><td class="masthead">
+          <p class="masthead-title">AGILIX</p>
+          <p class="masthead-subtitle">SaaS Monitoring Tenant POS</p>
+        </td></tr>
+        <tr><td class="alert-bar"><p>✅ Pembayaran Berhasil — Tagihan Telah Lunas</p></td></tr>
+        <tr><td class="content-cell">
+          <h1>Halo, {{ownerName}}! 🎉</h1>
+          <p>Terima kasih. Pembayaran tagihan langganan Agilix untuk bisnis <strong>{{businessName}}</strong> telah berhasil kami terima dan verifikasi.</p>
+          <hr class="divider" />
+          <h2>Detail Pembayaran</h2>
+          <table class="info-table" cellpadding="0" cellspacing="0">
+            <tr><td class="label">Nomor Invoice</td><td>{{invoiceNumber}}</td></tr>
+            <tr><td class="label">Nama Bisnis</td><td>{{businessName}}</td></tr>
+            <tr><td class="label">Periode Tagihan</td><td>{{billingPeriod}}</td></tr>
+            <tr><td class="label">Tanggal Bayar</td><td>{{paidAt}}</td></tr>
+            <tr><td class="label">Status Tagihan</td><td><span class="badge-paid">LUNAS / PAID</span></td></tr>
+          </table>
+          <div class="amount-box">
+            <p>Total Jumlah yang Telah Dibayar</p>
+            <p class="amount">Rp {{amount}}</p>
+          </div>
+          <hr class="divider" />
+          <p>Kuitansi / invoice lunas resmi dalam format PDF telah dilampirkan pada email ini untuk kebutuhan arsip Anda.</p>
+          <p>Salam,<br /><strong>Tim Agilix</strong></p>
+        </td></tr>
+        <tr><td class="footer-bar"></td></tr>
+      </table>
+      <table class="email-footer" width="570" cellpadding="0" cellspacing="0">
+        <tr><td>
+          <p>Email ini dikirim secara otomatis oleh sistem Agilix. Mohon tidak membalas email ini.</p>
+          <p>© 2026 Agilix. All rights reserved.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  },
 ];
 
 export async function seedEmailTemplates(

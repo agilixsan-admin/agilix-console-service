@@ -4,11 +4,19 @@ import { getQueueToken } from '@nestjs/bullmq';
 import { InvoiceService } from '../../src/service/modules/invoices/invoice.service';
 import { InvoiceRepository } from '../../src/repositories/modules/invoice.repository';
 import { TenantRepository } from '../../src/repositories/modules/tenant.repository';
+import { EmailTemplateRepository } from '../../src/repositories/modules/email-template.repository';
+import { NotificationService } from '../../src/service/modules/notifications/notification.service';
+import { InvoicePdfService } from '../../src/service/modules/invoices/invoice-pdf.service';
 import { AuditLogService } from '../../src/service/modules/audit-logs/audit-log.service';
 import { EventPublisherService } from '../../src/events/event-publisher.service';
 import { INVOICE_REMINDER_QUEUE } from '../../src/queues/jobs/invoice-reminder.job';
+import {
+  EMAIL_NOTIFICATION_QUEUE,
+  EMAIL_NOTIFICATION_JOB,
+} from '../../src/queues/jobs/email-notification.job';
 import { InvoiceStatus } from '../../src/types/enums/invoice-status.enum';
 import { AuditAction } from '../../src/types/enums/audit-action.enum';
+import { NotificationType } from '../../src/types/enums/notification-type.enum';
 import {
   TEST_INVOICE_ID,
   TEST_TENANT_ID,
@@ -19,9 +27,13 @@ import {
 } from '../config/constants';
 import {
   buildInvoice,
+  buildTenant,
   buildPaginatedResult,
   mockInvoiceRepository,
   mockTenantRepository,
+  mockEmailTemplateRepository,
+  mockNotificationService,
+  mockInvoicePdfService,
   mockAuditLogService,
   mockEventPublisherService,
   mockEmailQueue,
@@ -30,8 +42,14 @@ import {
 describe('InvoiceService', () => {
   let service: InvoiceService;
   let repository: ReturnType<typeof mockInvoiceRepository>;
+  let tenantRepository: ReturnType<typeof mockTenantRepository>;
+  let emailTemplateRepo: ReturnType<typeof mockEmailTemplateRepository>;
+  let notificationService: ReturnType<typeof mockNotificationService>;
+  let invoicePdfService: ReturnType<typeof mockInvoicePdfService>;
   let auditLogService: ReturnType<typeof mockAuditLogService>;
   let eventPublisher: ReturnType<typeof mockEventPublisherService>;
+  let emailQueue: ReturnType<typeof mockEmailQueue>;
+  let reminderQueue: ReturnType<typeof mockEmailQueue>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -39,6 +57,12 @@ describe('InvoiceService', () => {
         InvoiceService,
         { provide: InvoiceRepository, useFactory: mockInvoiceRepository },
         { provide: TenantRepository, useFactory: mockTenantRepository },
+        {
+          provide: EmailTemplateRepository,
+          useFactory: mockEmailTemplateRepository,
+        },
+        { provide: NotificationService, useFactory: mockNotificationService },
+        { provide: InvoicePdfService, useFactory: mockInvoicePdfService },
         { provide: AuditLogService, useFactory: mockAuditLogService },
         {
           provide: EventPublisherService,
@@ -48,13 +72,23 @@ describe('InvoiceService', () => {
           provide: getQueueToken(INVOICE_REMINDER_QUEUE),
           useFactory: mockEmailQueue,
         },
+        {
+          provide: getQueueToken(EMAIL_NOTIFICATION_QUEUE),
+          useFactory: mockEmailQueue,
+        },
       ],
     }).compile();
 
     service = module.get<InvoiceService>(InvoiceService);
     repository = module.get(InvoiceRepository);
+    tenantRepository = module.get(TenantRepository);
+    emailTemplateRepo = module.get(EmailTemplateRepository);
+    notificationService = module.get(NotificationService);
+    invoicePdfService = module.get(InvoicePdfService);
     auditLogService = module.get(AuditLogService);
     eventPublisher = module.get(EventPublisherService);
+    reminderQueue = module.get(getQueueToken(INVOICE_REMINDER_QUEUE));
+    emailQueue = module.get(getQueueToken(EMAIL_NOTIFICATION_QUEUE));
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -162,14 +196,16 @@ describe('InvoiceService', () => {
   describe('pay', () => {
     const payDto = { paidAt: TEST_PAID_AT.toISOString() };
 
-    it('harus membayar invoice, memanggil AuditLogService, dan mempublish payment.received', async () => {
+    it('harus membayar invoice, memanggil AuditLogService, mempublish payment.received, dan mengirim email konfirmasi pembayaran dengan lampiran PDF', async () => {
       const invoice = buildInvoice({ status: InvoiceStatus.PENDING });
       const paid = buildInvoice({
         status: InvoiceStatus.PAID,
         paidAt: TEST_PAID_AT,
       });
+      const tenant = buildTenant({ id: TEST_TENANT_ID });
       repository.findById.mockResolvedValue(invoice);
       repository.update.mockResolvedValue(paid);
+      tenantRepository.findById.mockResolvedValue(tenant);
       auditLogService.log.mockResolvedValue(undefined);
 
       const result = await service.pay(TEST_INVOICE_ID, payDto, TEST_USER_ID);
@@ -183,6 +219,38 @@ describe('InvoiceService', () => {
       );
       expect(eventPublisher.publishPaymentReceived).toHaveBeenCalledWith(
         expect.objectContaining({ invoiceId: TEST_INVOICE_ID }),
+      );
+      expect(emailTemplateRepo.render).toHaveBeenCalledWith(
+        'invoice-paid',
+        expect.objectContaining({
+          invoiceNumber: paid.invoiceNumber,
+          ownerName: tenant.ownerName,
+        }),
+      );
+      expect(invoicePdfService.generate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          invoiceNumber: paid.invoiceNumber,
+          status: InvoiceStatus.PAID,
+        }),
+      );
+      expect(notificationService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tenantId: paid.tenantId,
+          type: NotificationType.PAYMENT_CONFIRMATION,
+        }),
+      );
+      expect(emailQueue.add).toHaveBeenCalledWith(
+        EMAIL_NOTIFICATION_JOB,
+        expect.objectContaining({
+          recipient: tenant.ownerEmail,
+          attachments: expect.arrayContaining([
+            expect.objectContaining({
+              filename: `${paid.invoiceNumber}-LUNAS.pdf`,
+              contentType: 'application/pdf',
+            }),
+          ]),
+        }),
+        expect.any(Object),
       );
       expect(result.status).toBe(InvoiceStatus.PAID);
     });

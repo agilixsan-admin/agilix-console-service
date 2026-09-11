@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -8,6 +9,9 @@ import { Queue } from 'bullmq';
 import { Invoice } from '../../../models/invoice.model';
 import { InvoiceRepository } from '../../../repositories/modules/invoice.repository';
 import { TenantRepository } from '../../../repositories/modules/tenant.repository';
+import { EmailTemplateRepository } from '../../../repositories/modules/email-template.repository';
+import { NotificationService } from '../notifications/notification.service';
+import { InvoicePdfService } from './invoice-pdf.service';
 import { PaginatedResult } from '../../../types/response.types';
 import { CreateInvoiceDto } from '../../../dto/invoice/create-invoice.dto';
 import { PayInvoiceDto } from '../../../dto/invoice/pay-invoice.dto';
@@ -16,21 +20,35 @@ import { AuditLogService } from '../audit-logs/audit-log.service';
 import { EventPublisherService } from '../../../events/event-publisher.service';
 import { AuditAction } from '../../../types/enums/audit-action.enum';
 import { InvoiceStatus } from '../../../types/enums/invoice-status.enum';
+import { NotificationType } from '../../../types/enums/notification-type.enum';
+import { NotificationStatus } from '../../../types/enums/notification-status.enum';
 import {
   INVOICE_REMINDER_QUEUE,
   INVOICE_REMINDER_JOB,
   InvoiceReminderJobPayload,
 } from '../../../queues/jobs/invoice-reminder.job';
+import {
+  EMAIL_NOTIFICATION_QUEUE,
+  EMAIL_NOTIFICATION_JOB,
+  EmailNotificationJobPayload,
+} from '../../../queues/jobs/email-notification.job';
 
 @Injectable()
 export class InvoiceService {
+  private readonly logger = new Logger(InvoiceService.name);
+
   constructor(
     private readonly invoiceRepository: InvoiceRepository,
     private readonly tenantRepository: TenantRepository,
+    private readonly emailTemplateRepository: EmailTemplateRepository,
+    private readonly notificationService: NotificationService,
+    private readonly invoicePdfService: InvoicePdfService,
     private readonly auditLogService: AuditLogService,
     private readonly eventPublisher: EventPublisherService,
     @InjectQueue(INVOICE_REMINDER_QUEUE)
     private readonly reminderQueue: Queue,
+    @InjectQueue(EMAIL_NOTIFICATION_QUEUE)
+    private readonly emailQueue: Queue,
   ) {}
 
   async findAll(
@@ -124,7 +142,110 @@ export class InvoiceService {
       paidAt: dto.paidAt,
     });
 
+    await this.sendPaymentConfirmationEmail(updated, dto.paidAt);
+
     return updated;
+  }
+
+  private async sendPaymentConfirmationEmail(
+    invoice: Invoice,
+    paidAtStr: string,
+  ): Promise<void> {
+    try {
+      const tenant = await this.tenantRepository.findById(invoice.tenantId);
+      if (!tenant) {
+        this.logger.warn(
+          `Tenant "${invoice.tenantId}" not found for invoice "${invoice.id}", skipping payment confirmation email`,
+        );
+        return;
+      }
+
+      const formattedPaidAt = new Date(paidAtStr).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+
+      const formattedDueDate = new Date(invoice.dueDate).toLocaleDateString(
+        'id-ID',
+        {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        },
+      );
+
+      const { subject, html } = await this.emailTemplateRepository.render(
+        'invoice-paid',
+        {
+          ownerName: tenant.ownerName,
+          businessName: tenant.businessName,
+          invoiceNumber: invoice.invoiceNumber,
+          billingPeriod: invoice.billingPeriod,
+          paidAt: formattedPaidAt,
+          dueDate: formattedDueDate,
+          amount: Number(invoice.amount).toLocaleString('id-ID'),
+        },
+      );
+
+      const pdfBuffer = await this.invoicePdfService.generate({
+        invoiceNumber: invoice.invoiceNumber,
+        billingPeriod: invoice.billingPeriod,
+        dueDate: formattedDueDate,
+        amount: Number(invoice.amount),
+        status: InvoiceStatus.PAID,
+        notes: invoice.notes,
+        businessName: tenant.businessName,
+        ownerName: tenant.ownerName,
+        ownerEmail: tenant.ownerEmail,
+        ownerPhone: tenant.ownerPhone,
+        planType: tenant.planType,
+        outletCount: tenant.outletCount,
+        issuedAt: new Date(invoice.createdAt).toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }),
+      });
+
+      const notification = await this.notificationService.create({
+        tenantId: invoice.tenantId,
+        type: NotificationType.PAYMENT_CONFIRMATION,
+        recipient: tenant.ownerEmail,
+        subject,
+        content: html,
+        status: NotificationStatus.PENDING,
+      });
+
+      const payload: EmailNotificationJobPayload = {
+        notificationId: notification.id,
+        tenantId: invoice.tenantId,
+        recipient: tenant.ownerEmail,
+        subject,
+        content: html,
+        attachments: [
+          {
+            filename: `${invoice.invoiceNumber}-LUNAS.pdf`,
+            content: pdfBuffer.toString('base64'),
+            encoding: 'base64',
+            contentType: 'application/pdf',
+          },
+        ],
+      };
+
+      await this.emailQueue.add(EMAIL_NOTIFICATION_JOB, payload, {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+      });
+
+      this.logger.log(
+        `Payment confirmation email queued for invoice ${invoice.id} to ${tenant.ownerEmail}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send payment confirmation email for invoice ${invoice.id}: ${(error as Error).message}`,
+      );
+    }
   }
 
   async cancel(id: string, actorId: string): Promise<Invoice> {

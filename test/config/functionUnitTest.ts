@@ -448,3 +448,13 @@ export function mockEmailQueue() {
     add: jest.fn().mockResolvedValue({ id: 'mock-job-id' }),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Mock: InvoicePdfService
+// ---------------------------------------------------------------------------
+
+export function mockInvoicePdfService() {
+  return {
+    generate: jest.fn().mockResolvedValue(Buffer.from('mock-pdf-content')),
+  };
+}
