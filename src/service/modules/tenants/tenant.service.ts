@@ -221,6 +221,7 @@ export class TenantService {
         ownerEmail: updated.ownerEmail,
         ownerPhone: updated.ownerPhone,
         planType: updated.planType,
+        outletCount: updated.outletCount,
         expiryDate: updated.expiryDate,
       },
     );
